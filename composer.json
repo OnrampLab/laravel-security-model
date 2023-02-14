@@ -1,21 +1,18 @@
 {
-    "name": "onramplab/composer-package-template",
-    "description": "An composer template",
+    "name": "onramplab/laravel-security-model",
+    "description": "A Laravel package providing security for Eloquent model",
     "type": "library",
     "license": "MIT",
     "keywords": [
-        "template",
-        "composer",
-        "package",
-        "skeleton",
-        "boilerplate",
-        "composer template",
-        "package template",
-        "composer package template"
+        "laravel",
+        "security",
+        "encryption",
+        "eloquent",
+        "model"
     ],
     "authors": [
         {
-            "name": "Onramplab",
+            "name": "OnrampLab",
             "email": "dev@onramplab.com"
         }
     ],
@@ -38,7 +35,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Onramplab\\ComposerPackageTemplate\\": "src/"
+            "OnrampLab\\SecurityModel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OnrampLab\\SecurityModel\\Tests\\": "tests"
         }
     },
     "extra": {

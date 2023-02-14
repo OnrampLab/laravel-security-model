@@ -1,10 +1,10 @@
-# composer-package-template
+# laravel-security-model
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![CircleCI](https://circleci.com/gh/OnrampLab/composer-package-template.svg?style=shield)](https://circleci.com/gh/OnrampLab/composer-package-template)
-[![Total Downloads](https://img.shields.io/packagist/dt/onramplab/composer-package-template.svg?style=flat-square)](https://packagist.org/packages/onramplab/composer-package-template)
+[![CircleCI](https://circleci.com/gh/OnrampLab/laravel-security-model.svg?style=shield)](https://circleci.com/gh/OnrampLab/laravel-security-model)
+[![Total Downloads](https://img.shields.io/packagist/dt/onramplab/laravel-security-model.svg?style=flat-square)](https://packagist.org/packages/onramplab/laravel-security-model)
 
-If you are trying to create a new PHP Composer package, whether it is going to be submitted to packagist.org or just to exist in your Github account, this template package of files will surely help you make the process a lot easier and faster.
+A Laravel package providing security for Eloquent model
 
 ## Requirements
 
@@ -23,7 +23,7 @@ If you are trying to create a new PHP Composer package, whether it is going to b
 ## Installation
 
 ```bash
-composer create-project onramplab/composer-package-template yourproject
+composer require onramplab/laravel-security-model
 ```
 
 This will create a basic project structure for you:
@@ -76,7 +76,7 @@ Please refer to original [article](http://www.darwinbiler.com/creating-composer-
 
 ## Changelog
 
-To keep track, please refer to [CHANGELOG.md](https://github.com/Onramplab/composer-package-template/blob/master/CHANGELOG.md).
+To keep track, please refer to [CHANGELOG.md](https://github.com/Onramplab/laravel-security-model/blob/master/CHANGELOG.md).
 
 ## Contributing
 
@@ -88,8 +88,8 @@ To keep track, please refer to [CHANGELOG.md](https://github.com/Onramplab/compo
 6. Push to the branch (git push origin my-new-feature).
 7. Create new pull request.
 
-Also please refer to [CONTRIBUTION.md](https://github.com/Onramplab/composer-package-template/blob/master/CONTRIBUTION.md).
+Also please refer to [CONTRIBUTION.md](https://github.com/Onramplab/laravel-security-model/blob/master/CONTRIBUTION.md).
 
 ## License
 
-Please refer to [LICENSE](https://github.com/Onramplab/composer-package-template/blob/master/LICENSE).
+Please refer to [LICENSE](https://github.com/Onramplab/laravel-security-model/blob/master/LICENSE).
