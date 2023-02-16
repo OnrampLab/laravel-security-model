@@ -51,6 +51,11 @@
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "OnrampLab\\SecurityModel\\SecurityModelServiceProvider"
+            ]
         }
     },
     "config": {
