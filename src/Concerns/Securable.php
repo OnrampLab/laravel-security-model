@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\App;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
+use OnrampLab\SecurityModel\Observers\ModelObserver;
 use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
@@ -23,6 +24,8 @@ trait Securable
 
     public static function bootSecurable(): void
     {
+        static::observe(ModelObserver::class);
+
         static::$keyManager = App::make(KeyManager::class);
     }
 
