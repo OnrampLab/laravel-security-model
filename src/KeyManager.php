@@ -4,9 +4,12 @@ namespace OnrampLab\SecurityModel;
 
 use Closure;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use OnrampLab\SecurityModel\Contracts\KeyManager as KeyManagerContract;
 use OnrampLab\SecurityModel\Contracts\KeyProvider;
+use OnrampLab\SecurityModel\Models\EncryptionKey;
+use ParagonIE\ConstantTime\Hex;
 
 class KeyManager implements KeyManagerContract
 {
@@ -31,6 +34,40 @@ class KeyManager implements KeyManagerContract
     public function addProvider(string $driverName, Closure $resolver): void
     {
         $this->providers[$driverName] = $resolver;
+    }
+
+    /**
+     * Retrieve a available encryption key
+     */
+    public function retrieveKey(?string $driverName = null): EncryptionKey
+    {
+        $provider = $this->resolveProvider($driverName);
+        $type = Str::kebab(Str::camel($provider->getName()));
+        $key = EncryptionKey::where('type', $type)->where('is_primary', true)->first();
+
+        if (! $key) {
+            $key = $this->generateKey($driverName);
+        }
+
+        return $key;
+    }
+
+    /**
+     * Generate a new encryption key
+     */
+    public function generateKey(?string $driverName = null): EncryptionKey
+    {
+        $provider = $this->resolveProvider($driverName);
+        $type = Str::kebab(Str::camel($provider->getName()));
+        $dataKey = Hex::encode(random_bytes(32));
+        $ciphertext = $provider->encrypt($dataKey);
+
+        return EncryptionKey::create([
+            'type' => $type,
+            'key_id' => $ciphertext->keyId,
+            'data_key' => $ciphertext->content,
+            'is_primary' => true,
+        ]);
     }
 
     /**
