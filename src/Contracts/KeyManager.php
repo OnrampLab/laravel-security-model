@@ -15,4 +15,9 @@ interface KeyManager
      * Generate a new encryption key
      */
     public function generateKey(?string $driverName = null): EncryptionKey;
+
+    /**
+     * Decrypt a encryption key
+     */
+    public function decryptKey(EncryptionKey $key): string;
 }

@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use OnrampLab\SecurityModel\Contracts\KeyManager as KeyManagerContract;
 use OnrampLab\SecurityModel\Contracts\KeyProvider;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
+use OnrampLab\SecurityModel\ValueObjects\Ciphertext;
 use ParagonIE\ConstantTime\Hex;
 
 class KeyManager implements KeyManagerContract
@@ -22,6 +23,11 @@ class KeyManager implements KeyManagerContract
      * The array of resolved key providers.
      */
     protected array $providers = [];
+
+    /**
+     * The array of decrypted keys.
+     */
+    protected array $keys = [];
 
     public function __construct(Application $app)
     {
@@ -68,6 +74,28 @@ class KeyManager implements KeyManagerContract
             'data_key' => $ciphertext->content,
             'is_primary' => true,
         ]);
+    }
+
+    /**
+     * Decrypt a encryption key
+     */
+    public function decryptKey(EncryptionKey $key): string
+    {
+        if (isset($this->keys[$key->id])) {
+            return $this->keys[$key->id];
+        }
+
+        $driverName = Str::snake(Str::camel($key->type));
+        $provider = $this->resolveProvider($driverName);
+        $ciphertext = new Ciphertext([
+            'key_id' => $key->key_id,
+            'content' => $key->data_key,
+        ]);
+        $plaintext = $provider->decrypt($ciphertext);
+
+        $this->keys[$key->id] = $plaintext;
+
+        return $plaintext;
     }
 
     /**

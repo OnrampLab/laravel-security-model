@@ -100,4 +100,29 @@ class KeyManagerTest extends TestCase
         $this->assertEquals($encryptionKey->data_key, $ciphertext->content);
         $this->assertEquals($encryptionKey->is_primary, true);
     }
+
+    /**
+     * @test
+     */
+    public function decrypt_key_should_work(): void
+    {
+        $driverName = $this->config['driver'];
+        $encryptionKey = EncryptionKey::factory([
+            'type' => Str::kebab(Str::camel($driverName)),
+        ])->create();
+        $expectedText = Hex::encode(random_bytes(32));
+
+        $this->providerMock
+            ->shouldReceive('decrypt')
+            ->once()
+            ->withArgs(function (Ciphertext $ciphertext) use ($encryptionKey) {
+                return $ciphertext->keyId === $encryptionKey->key_id
+                    && $ciphertext->content === $encryptionKey->data_key;
+            })
+            ->andReturn($expectedText);
+
+        $actualText = $this->manager->decryptKey($encryptionKey);
+
+        $this->assertEquals($expectedText, $actualText);
+    }
 }
