@@ -32,6 +32,15 @@ class EncryptionKey extends Model
         'is_primary' => 'boolean',
     ];
 
+    /**
+     * Deprecate this key and will not use this one to encrypt data anymore.
+     */
+    public function deprecate(): void
+    {
+        $this->fill(['is_primary' => false]);
+        $this->save();
+    }
+
     protected static function newFactory(): Factory
     {
         return EncryptionKeyFactory::new();
