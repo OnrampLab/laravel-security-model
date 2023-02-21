@@ -40,10 +40,18 @@ php artisan vendor:publish --tag="security-model-config"
 
 ## Usage
 
+### Configuration
+
 1. Set up credentials for key provider you want to use for encryption
-2. Use the `OnrampLab\SecurityModel\Concerns\Securable` trait in model
-4. Implement the `OnrampLab\SecurityModel\Contracts\Securable` in model
-3. Set up `$encryptable` array attribute in model to define which fields needed to be encrypted
+2. Generate a encryption key
+
+    ```bash
+    php artisan security-model:generate-key
+    ```
+
+3. Use the `Securable` trait in a model
+4. Implement the `Securable` interface in a model
+5. Set up `$encryptable` array attribute in a model to define which fields needed to be encrypted
 
 ```php
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +61,14 @@ use OnrampLab\SecurityModel\Contracts\Securable as SecurableContract;
 class User extends Model implements SecurableContract
 {
     use Securable;
+
+    /**
+     * The attributes that are mass assignable.
+     */
+    protected array $fillable = [
+        'phone',
+        'email',
+    ];
 
     /**
      * The attributes that are needed to be encrypted.
@@ -65,6 +81,19 @@ class User extends Model implements SecurableContract
 
 ```
 
+### Conditional Encryption
+
+Sometimes you may need to determinate whether a model should be encrypted under certain conditions. To accomplish this, you may define a `shouldBeEncryptable` method on your model:
+
+```php
+/**
+ * Determine if the model should be encrytable.
+ */
+public function shouldBeEncryptable(): bool
+{
+    return $this->isClassified();
+}
+```
 
 ## Running Tests
 
