@@ -10,4 +10,7 @@
       <directory suffix=".php">tests</directory>
     </testsuite>
   </testsuites>
+  <php>
+    <env name="APP_KEY" value="base64:wGtk3lY6+3kWoknSp9TwZasXXlgDol8y9DNHUmN2g3c="/>
+  </php>
 </phpunit>
