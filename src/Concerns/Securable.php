@@ -39,8 +39,17 @@ trait Securable
         return (bool) $this->encryptionKeys->first();
     }
 
+    public function shouldBeEncryptable(): bool
+    {
+        return true;
+    }
+
     public function encrypt(): void
     {
+        if (! $this->shouldBeEncryptable()) {
+            return;
+        }
+
         $encryptionKey = $this->encryptionKeys()->first();
 
         if (! $encryptionKey) {
