@@ -47,14 +47,6 @@ class AwsKmsKeyProviderTest extends TestCase
     /**
      * @test
      */
-    public function get_name_should_work(): void
-    {
-        $this->assertEquals($this->config['driver'], $this->provider->getName());
-    }
-
-    /**
-     * @test
-     */
     public function get_key_id_should_work(): void
     {
         $this->assertEquals($this->config['key_id'], $this->provider->getKeyId());

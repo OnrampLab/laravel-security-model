@@ -13,8 +13,6 @@ class AwsKmsKeyProvider implements KeyProvider
 
     protected KmsClient $client;
 
-    protected string $name;
-
     protected string $keyId;
 
     public function __construct(array $config)
@@ -24,13 +22,7 @@ class AwsKmsKeyProvider implements KeyProvider
             'region' => $config['region'],
             'credentials' => new Credentials($config['access_key'], $config['access_secret']),
         ]);
-        $this->name = $config['driver'];
         $this->keyId = $config['key_id'];
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
     }
 
     public function getKeyId(): string
