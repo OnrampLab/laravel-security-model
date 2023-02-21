@@ -9,7 +9,7 @@ interface KeyManager
     /**
      * Retrieve a available encryption key
      */
-    public function retrieveKey(?string $providerName = null): EncryptionKey;
+    public function retrieveKey(?string $providerName = null): ?EncryptionKey;
 
     /**
      * Generate a new encryption key

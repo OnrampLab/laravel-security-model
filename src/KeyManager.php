@@ -45,16 +45,13 @@ class KeyManager implements KeyManagerContract
     /**
      * Retrieve a available encryption key
      */
-    public function retrieveKey(?string $providerName = null): EncryptionKey
+    public function retrieveKey(?string $providerName = null): ?EncryptionKey
     {
         $type = Str::kebab(Str::camel($this->getName($providerName)));
-        $key = EncryptionKey::where('type', $type)->where('is_primary', true)->first();
 
-        if (! $key) {
-            $key = $this->generateKey($providerName);
-        }
-
-        return $key;
+        return EncryptionKey::where('type', $type)
+            ->where('is_primary', true)
+            ->first();
     }
 
     /**
