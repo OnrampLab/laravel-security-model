@@ -47,8 +47,7 @@ class KeyManager implements KeyManagerContract
      */
     public function retrieveKey(?string $providerName = null): EncryptionKey
     {
-        $provider = $this->resolveProvider($providerName);
-        $type = Str::kebab(Str::camel($provider->getName()));
+        $type = Str::kebab(Str::camel($this->getName($providerName)));
         $key = EncryptionKey::where('type', $type)->where('is_primary', true)->first();
 
         if (! $key) {
@@ -63,8 +62,8 @@ class KeyManager implements KeyManagerContract
      */
     public function generateKey(?string $providerName = null): EncryptionKey
     {
+        $type = Str::kebab(Str::camel($this->getName($providerName)));
         $provider = $this->resolveProvider($providerName);
-        $type = Str::kebab(Str::camel($provider->getName()));
         $dataKey = Hex::encode(random_bytes(32));
         $ciphertext = $provider->encrypt($dataKey);
 
@@ -96,6 +95,14 @@ class KeyManager implements KeyManagerContract
         $this->keys[$key->id] = $plaintext;
 
         return $plaintext;
+    }
+
+    /**
+     * Get the full name for the given key provider.
+     */
+    public function getName(?string $providerName = null): string
+    {
+        return $providerName ?: $this->getDefaultProvider();
     }
 
     /**
