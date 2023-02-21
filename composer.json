@@ -82,10 +82,10 @@
             "@php tools/phpDocumentor"
         ],
         "insights": [
-            "@php vendor/bin/phpinsights analyse --no-interaction src"
+            "@php vendor/bin/phpinsights analyse --no-interaction"
         ],
         "insights:fix": [
-            "@php vendor/bin/phpinsights analyse --no-interaction --fix src"
+            "@php vendor/bin/phpinsights analyse --no-interaction --fix"
         ],
         "dependencies:check": [
             "phpmd src text rulesets.xml"
