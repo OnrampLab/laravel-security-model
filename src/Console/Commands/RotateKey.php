@@ -15,7 +15,7 @@ class RotateKey extends Command
      * @var string
      */
     protected $signature = 'security-model:rotate-key
-                            {driver? : The driver name of key provider}';
+                            {provider? : The name of key provider}';
 
     /**
      * The console command description.
@@ -42,11 +42,11 @@ class RotateKey extends Command
         DB::beginTransaction();
 
         try {
-            /** @var string|null $driverName */
-            $driverName = $this->argument('driver');
-            $currentKey = $keyManager->retrieveKey($driverName);
+            /** @var string|null $providerName */
+            $providerName = $this->argument('provider');
+            $currentKey = $keyManager->retrieveKey($providerName);
 
-            $keyManager->generateKey($driverName);
+            $keyManager->generateKey($providerName);
             $currentKey->deprecate();
 
             DB::commit();
