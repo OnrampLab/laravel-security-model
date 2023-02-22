@@ -67,6 +67,7 @@ trait Securable
         $encryptionRow = $this->buildEncryptionRow($dataKey);
 
         $this->setRawAttributes($encryptionRow->encryptRow($this->getAttributes()));
+        $this->saveQuietly();
     }
 
     public function decrypt(): void
