@@ -10,6 +10,8 @@ interface Securable
 
     public function isEncrypted(): bool;
 
+    public function shouldBeEncryptable(): bool;
+
     public function encrypt(): void;
 
     public function decrypt(): void;

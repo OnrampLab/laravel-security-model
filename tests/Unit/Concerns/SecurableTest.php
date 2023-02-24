@@ -64,6 +64,14 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    public function should_be_encrytable_should_work(): void
+    {
+        $this->assertTrue($this->model->shouldBeEncryptable());
+    }
+
+    /**
+     * @test
+     */
     public function encrypt_should_work(): void
     {
         $this->managerMock

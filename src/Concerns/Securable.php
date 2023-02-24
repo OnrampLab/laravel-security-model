@@ -2,6 +2,7 @@
 
 namespace OnrampLab\SecurityModel\Concerns;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\App;
@@ -39,12 +40,25 @@ trait Securable
         return (bool) $this->encryptionKeys->first();
     }
 
+    public function shouldBeEncryptable(): bool
+    {
+        return true;
+    }
+
     public function encrypt(): void
     {
+        if (! $this->shouldBeEncryptable()) {
+            return;
+        }
+
         $encryptionKey = $this->encryptionKeys()->first();
 
         if (! $encryptionKey) {
             $encryptionKey = static::$keyManager->retrieveKey();
+
+            if (! $encryptionKey) {
+                throw new Exception('Should generate a key first before encrypting model');
+            }
 
             $this->encryptionKeys()->attach($encryptionKey->id);
         }
@@ -53,6 +67,7 @@ trait Securable
         $encryptionRow = $this->buildEncryptionRow($dataKey);
 
         $this->setRawAttributes($encryptionRow->encryptRow($this->getAttributes()));
+        $this->saveQuietly();
     }
 
     public function decrypt(): void

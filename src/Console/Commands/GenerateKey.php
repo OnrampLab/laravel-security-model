@@ -7,14 +7,14 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 
-class RotateKey extends Command
+class GenerateKey extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'security-model:rotate-key
+    protected $signature = 'security-model:generate-key
                             {provider? : The name of key provider}';
 
     /**
@@ -22,7 +22,7 @@ class RotateKey extends Command
      *
      * @var string
      */
-    protected $description = 'Rotate the primary encryption key.';
+    protected $description = 'Generate a primary encryption key.';
 
     /**
      * Create a new command instance.
@@ -44,14 +44,13 @@ class RotateKey extends Command
         try {
             /** @var string|null $providerName */
             $providerName = $this->argument('provider');
-            $currentKey = $keyManager->retrieveKey($providerName);
+            $existedKey = $keyManager->retrieveKey($providerName);
 
-            if ($currentKey) {
-                $keyManager->generateKey($providerName);
-                $currentKey->deprecate();
-                $this->info('encryption key rotation done');
+            if ($existedKey) {
+                $this->info('encryption key already existed');
             } else {
-                $this->info('there is no encryption key needed to be rotated');
+                $keyManager->generateKey($providerName);
+                $this->info('encryption key creation done');
             }
 
             DB::commit();
@@ -60,7 +59,7 @@ class RotateKey extends Command
         } catch (Exception $exception) {
             DB::rollBack();
 
-            $this->error("encryption key rotation failed: {$exception->getMessage()}");
+            $this->error("encryption key creation failed: {$exception->getMessage()}");
 
             return Command::FAILURE;
         }

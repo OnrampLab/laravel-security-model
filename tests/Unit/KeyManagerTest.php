@@ -16,6 +16,8 @@ class KeyManagerTest extends TestCase
 {
     private array $config;
 
+    private string $providerName;
+
     private MockInterface $providerMock;
 
     private KeyManager $manager;
@@ -29,12 +31,13 @@ class KeyManagerTest extends TestCase
         parent::defineEnvironment($app);
 
         $this->config = [
-            'driver'   => 'test',
+            'driver'   => 'test_driver',
             'key_id' => Str::uuid()->toString(),
         ];
+        $this->providerName = 'test_provider';
 
-        $app['config']->set('security_model.default', 'test');
-        $app['config']->set('security_model.providers.test', $this->config);
+        $app['config']->set('security_model.default', $this->providerName);
+        $app['config']->set("security_model.providers.{$this->providerName}", $this->config);
     }
 
     protected function setUp(): void
@@ -53,18 +56,11 @@ class KeyManagerTest extends TestCase
      */
     public function retrieve_key_should_work(): void
     {
-        $driverName = $this->config['driver'];
-
-        $this->providerMock
-            ->shouldReceive('getName')
-            ->once()
-            ->andReturn($driverName);
-
         $expectedKey = EncryptionKey::factory([
-            'type' => Str::kebab(Str::camel($driverName)),
+            'type' => Str::kebab(Str::camel($this->providerName)),
             'is_primary' => true,
         ])->create();
-        $actualKey = $this->manager->retrieveKey($driverName);
+        $actualKey = $this->manager->retrieveKey($this->providerName);
 
         $this->assertEquals($expectedKey->id, $actualKey->id);
     }
@@ -74,16 +70,10 @@ class KeyManagerTest extends TestCase
      */
     public function generate_key_should_work(): void
     {
-        $driverName = $this->config['driver'];
         $ciphertext = new Ciphertext([
             'key_id' => Str::uuid()->toString(),
             'content' => base64_encode(random_bytes(8)),
         ]);
-
-        $this->providerMock
-            ->shouldReceive('getName')
-            ->once()
-            ->andReturn($driverName);
 
         $this->providerMock
             ->shouldReceive('encrypt')
@@ -93,9 +83,9 @@ class KeyManagerTest extends TestCase
             })
             ->andReturn($ciphertext);
 
-        $encryptionKey = $this->manager->generateKey($driverName);
+        $encryptionKey = $this->manager->generateKey($this->providerName);
 
-        $this->assertEquals($encryptionKey->type, Str::kebab(Str::camel($driverName)));
+        $this->assertEquals($encryptionKey->type, Str::kebab(Str::camel($this->providerName)));
         $this->assertEquals($encryptionKey->key_id, $ciphertext->keyId);
         $this->assertEquals($encryptionKey->data_key, $ciphertext->content);
         $this->assertEquals($encryptionKey->is_primary, true);
@@ -106,9 +96,8 @@ class KeyManagerTest extends TestCase
      */
     public function decrypt_key_should_work(): void
     {
-        $driverName = $this->config['driver'];
         $encryptionKey = EncryptionKey::factory([
-            'type' => Str::kebab(Str::camel($driverName)),
+            'type' => Str::kebab(Str::camel($this->providerName)),
         ])->create();
         $expectedText = Hex::encode(random_bytes(32));
 
@@ -124,5 +113,15 @@ class KeyManagerTest extends TestCase
         $actualText = $this->manager->decryptKey($encryptionKey);
 
         $this->assertEquals($expectedText, $actualText);
+    }
+
+    /**
+     * @test
+     * @testWith ["test_provider"]
+     *           [null]
+     */
+    public function get_name_should_work(?string $providerName): void
+    {
+        $this->assertEquals($this->providerName, $this->manager->getName($providerName));
     }
 }

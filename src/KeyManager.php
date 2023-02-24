@@ -45,26 +45,22 @@ class KeyManager implements KeyManagerContract
     /**
      * Retrieve a available encryption key
      */
-    public function retrieveKey(?string $driverName = null): EncryptionKey
+    public function retrieveKey(?string $providerName = null): ?EncryptionKey
     {
-        $provider = $this->resolveProvider($driverName);
-        $type = Str::kebab(Str::camel($provider->getName()));
-        $key = EncryptionKey::where('type', $type)->where('is_primary', true)->first();
+        $type = Str::kebab(Str::camel($this->getName($providerName)));
 
-        if (! $key) {
-            $key = $this->generateKey($driverName);
-        }
-
-        return $key;
+        return EncryptionKey::where('type', $type)
+            ->where('is_primary', true)
+            ->first();
     }
 
     /**
      * Generate a new encryption key
      */
-    public function generateKey(?string $driverName = null): EncryptionKey
+    public function generateKey(?string $providerName = null): EncryptionKey
     {
-        $provider = $this->resolveProvider($driverName);
-        $type = Str::kebab(Str::camel($provider->getName()));
+        $type = Str::kebab(Str::camel($this->getName($providerName)));
+        $provider = $this->resolveProvider($providerName);
         $dataKey = Hex::encode(random_bytes(32));
         $ciphertext = $provider->encrypt($dataKey);
 
@@ -85,8 +81,8 @@ class KeyManager implements KeyManagerContract
             return $this->keys[$key->id];
         }
 
-        $driverName = Str::snake(Str::camel($key->type));
-        $provider = $this->resolveProvider($driverName);
+        $providerName = Str::snake(Str::camel($key->type));
+        $provider = $this->resolveProvider($providerName);
         $ciphertext = new Ciphertext([
             'key_id' => $key->key_id,
             'content' => $key->data_key,
@@ -99,11 +95,19 @@ class KeyManager implements KeyManagerContract
     }
 
     /**
+     * Get the full name for the given key provider.
+     */
+    public function getName(?string $providerName = null): string
+    {
+        return $providerName ?: $this->getDefaultProvider();
+    }
+
+    /**
      * Resolve a key provider.
      */
-    protected function resolveProvider(?string $driverName): KeyProvider
+    protected function resolveProvider(?string $providerName): KeyProvider
     {
-        $config = $this->getProviderConfig($driverName);
+        $config = $this->getProviderConfig($providerName);
         $name = $config['driver'];
 
         if (! isset($this->providers[$name])) {
@@ -116,9 +120,9 @@ class KeyManager implements KeyManagerContract
     /**
      * Get the key provider configuration.
      */
-    protected function getProviderConfig(?string $driverName): array
+    protected function getProviderConfig(?string $providerName): array
     {
-        $name = $driverName ?: $this->getDefaultDriver();
+        $name = $providerName ?: $this->getDefaultProvider();
         $config = $this->app['config']["security_model.providers.{$name}"] ?? null;
 
         if (is_null($config)) {
@@ -129,9 +133,9 @@ class KeyManager implements KeyManagerContract
     }
 
     /**
-     * Get the driver name of default key provider.
+     * Get the name of default key provider.
      */
-    protected function getDefaultDriver(): string
+    protected function getDefaultProvider(): string
     {
         return $this->app['config']['security_model.default'] ?? '';
     }

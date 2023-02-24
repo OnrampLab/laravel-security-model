@@ -11,13 +11,9 @@ class ModelObserver
         $model->decrypt();
     }
 
-    public function saving(Securable $model): void
-    {
-        $model->encrypt();
-    }
-
     public function saved(Securable $model): void
     {
+        $model->encrypt();
         $model->decrypt();
     }
 }
