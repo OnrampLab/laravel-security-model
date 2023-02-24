@@ -3,6 +3,8 @@
 namespace OnrampLab\SecurityModel;
 
 use Illuminate\Support\ServiceProvider;
+use OnrampLab\SecurityModel\Console\Commands\GenerateKey;
+use OnrampLab\SecurityModel\Console\Commands\RotateKey;
 use OnrampLab\SecurityModel\Contracts\KeyManager as KeyManagerContract;
 use OnrampLab\SecurityModel\KeyManager;
 use OnrampLab\SecurityModel\KeyProviders\AwsKmsKeyProvider;
@@ -29,6 +31,8 @@ class SecurityModelServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/security_model.php' => config_path('security_model.php'),
         ], 'security-model-config');
+
+        $this->registerCommands();
     }
 
     protected function registerKeyManager(): void
@@ -50,5 +54,15 @@ class SecurityModelServiceProvider extends ServiceProvider
         $manager->addProvider('aws_kms', function (array $config) {
             return new AwsKmsKeyProvider($config);
         });
+    }
+
+    protected function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                GenerateKey::class,
+                RotateKey::class,
+            ]);
+        }
     }
 }
