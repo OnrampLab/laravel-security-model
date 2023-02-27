@@ -2,6 +2,7 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
@@ -113,6 +114,30 @@ class KeyManagerTest extends TestCase
         $actualText = $this->manager->decryptEncryptionKey($encryptionKey);
 
         $this->assertEquals($expectedText, $actualText);
+    }
+
+    /**
+     * @test
+     */
+    public function retrieve_hash_key_should_work(): void
+    {
+        $expectedKey = Hex::encode(random_bytes(32));
+
+        Config::set('security_model.hash_key', $expectedKey);
+
+        $actualKey = $this->manager->retrieveHashKey();
+
+        $this->assertEquals($expectedKey, $actualKey);
+    }
+
+    /**
+     * @test
+     */
+    public function generate_hash_key_should_work(): void
+    {
+        $hashKey = $this->manager->generateHashKey();
+
+        $this->assertEquals(32, strlen(Hex::decode($hashKey)));
     }
 
     /**

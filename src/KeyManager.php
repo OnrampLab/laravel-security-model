@@ -3,7 +3,6 @@
 namespace OnrampLab\SecurityModel;
 
 use Closure;
-use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -99,6 +98,28 @@ class KeyManager implements KeyManagerContract
         $this->keys[$key->id] = $plaintext;
 
         return $plaintext;
+    }
+
+    /**
+     * Retrieve a available hash key
+     */
+    public function retrieveHashKey(): string
+    {
+        $key = $this->app['config']['security_model.hash_key'] ?? '';
+
+        if (! $key) {
+            throw KeyNotExistedException::create('hash key');
+        }
+
+        return $key;
+    }
+
+    /**
+     * Generate a new hash key
+     */
+    public function generateHashKey(): string
+    {
+        return Hex::encode(random_bytes(32));
     }
 
     /**

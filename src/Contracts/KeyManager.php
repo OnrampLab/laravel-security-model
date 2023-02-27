@@ -20,4 +20,14 @@ interface KeyManager
      * Decrypt a encryption key
      */
     public function decryptEncryptionKey(EncryptionKey $key): string;
+
+    /**
+     * Retrieve a available hash key
+     */
+    public function retrieveHashKey(): string;
+
+    /**
+     * Generate a new hash key
+     */
+    public function generateHashKey(): string;
 }
