@@ -7,14 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\App;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
+use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\Observers\ModelObserver;
-use ParagonIE\CipherSweet\Backend\BoringCrypto;
-use ParagonIE\CipherSweet\BlindIndex;
-use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\Constants;
-use ParagonIE\CipherSweet\EncryptedRow;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 /**
  * @mixin Model
@@ -64,9 +59,9 @@ trait Securable
         }
 
         $dataKey = static::$keyManager->decryptKey($encryptionKey);
-        $encryptionRow = $this->buildEncryptionRow($dataKey);
+        $encrypter = App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
 
-        $this->setRawAttributes($encryptionRow->encryptRow($this->getAttributes()));
+        $this->setRawAttributes($encrypter->encryptRow($dataKey, $this->getAttributes()));
         $this->saveQuietly();
     }
 
@@ -79,26 +74,9 @@ trait Securable
         }
 
         $dataKey = static::$keyManager->decryptKey($encryptionKey);
-        $encryptionRow = $this->buildEncryptionRow($dataKey);
+        $encrypter = App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
 
-        $this->setRawAttributes($encryptionRow->decryptRow($this->getAttributes()), true);
-    }
-
-    protected function buildEncryptionRow(string $dataKey): EncryptedRow
-    {
-        $keyProvider = new StringProvider($dataKey);
-        $backend = new BoringCrypto();
-        $engine = new CipherSweet($keyProvider, $backend);
-        $row = new EncryptedRow($engine, $this->getTable());
-        $fields = $this->getEncryptableFields();
-
-        foreach ($fields as $field) {
-            $row
-                ->addField($field, Constants::TYPE_TEXT)
-                ->addBlindIndex($field, new BlindIndex("{$field}_index"));
-        }
-
-        return $row;
+        $this->setRawAttributes($encrypter->decryptRow($dataKey, $this->getAttributes()), true);
     }
 
     protected function getEncryptableFields(): array
