@@ -3,11 +3,13 @@
 namespace OnrampLab\SecurityModel;
 
 use Closure;
+use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use OnrampLab\SecurityModel\Contracts\KeyManager as KeyManagerContract;
 use OnrampLab\SecurityModel\Contracts\KeyProvider;
+use OnrampLab\SecurityModel\Exceptions\KeyNotExistedException;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\ValueObjects\Ciphertext;
 use ParagonIE\ConstantTime\Hex;
@@ -45,13 +47,18 @@ class KeyManager implements KeyManagerContract
     /**
      * Retrieve a available encryption key
      */
-    public function retrieveKey(?string $providerName = null): ?EncryptionKey
+    public function retrieveKey(?string $providerName = null): EncryptionKey
     {
         $type = Str::kebab(Str::camel($this->getName($providerName)));
-
-        return EncryptionKey::where('type', $type)
+        $key = EncryptionKey::where('type', $type)
             ->where('is_primary', true)
             ->first();
+
+        if (! $key) {
+            throw KeyNotExistedException::create('encryption key');
+        }
+
+        return $key;
     }
 
     /**

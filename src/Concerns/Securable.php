@@ -51,10 +51,6 @@ trait Securable
         if (! $encryptionKey) {
             $encryptionKey = static::$keyManager->retrieveKey();
 
-            if (! $encryptionKey) {
-                throw new Exception('Should generate a key first before encrypting model');
-            }
-
             $this->encryptionKeys()->attach($encryptionKey->id);
         }
 

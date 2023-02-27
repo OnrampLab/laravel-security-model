@@ -6,6 +6,8 @@ use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
+use OnrampLab\SecurityModel\Exceptions\KeyNotExistedException;
+use OnrampLab\SecurityModel\Models\EncryptionKey;
 
 class GenerateKey extends Command
 {
@@ -44,7 +46,7 @@ class GenerateKey extends Command
         try {
             /** @var string|null $providerName */
             $providerName = $this->argument('provider');
-            $existedKey = $keyManager->retrieveKey($providerName);
+            $existedKey = $this->retrieveEncryptionKey($keyManager, $providerName);
 
             if ($existedKey) {
                 $this->info('encryption key already existed');
@@ -62,6 +64,15 @@ class GenerateKey extends Command
             $this->error("encryption key creation failed: {$exception->getMessage()}");
 
             return Command::FAILURE;
+        }
+    }
+
+    private function retrieveEncryptionKey(KeyManager $keyManager, ?string $providerName): ?EncryptionKey
+    {
+        try {
+            return $keyManager->retrieveKey($providerName);
+        } catch (KeyNotExistedException $exception) {
+            return null;
         }
     }
 }
