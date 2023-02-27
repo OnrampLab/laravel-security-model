@@ -51,7 +51,7 @@ class GenerateKey extends Command
             if ($existedKey) {
                 $this->info('encryption key already existed');
             } else {
-                $keyManager->generateKey($providerName);
+                $keyManager->generateEncryptionKey($providerName);
                 $this->info('encryption key creation done');
             }
 
@@ -70,7 +70,7 @@ class GenerateKey extends Command
     private function retrieveEncryptionKey(KeyManager $keyManager, ?string $providerName): ?EncryptionKey
     {
         try {
-            return $keyManager->retrieveKey($providerName);
+            return $keyManager->retrieveEncryptionKey($providerName);
         } catch (KeyNotExistedException $exception) {
             return null;
         }

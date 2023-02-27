@@ -81,14 +81,14 @@ class SecurableTest extends TestCase
     public function encrypt_should_work(): void
     {
         $this->keyManagerMock
-            ->shouldReceive('retrieveKey')
+            ->shouldReceive('retrieveEncryptionKey')
             ->once()
             ->andReturn($this->encryptionKey);
 
         $dataKey = base64_encode(random_bytes(32));
 
         $this->keyManagerMock
-            ->shouldReceive('decryptKey')
+            ->shouldReceive('decryptEncryptionKey')
             ->once()
             ->with($this->encryptionKey)
             ->andReturn($dataKey);
@@ -118,7 +118,7 @@ class SecurableTest extends TestCase
         $dataKey = base64_encode(random_bytes(32));
 
         $this->keyManagerMock
-            ->shouldReceive('decryptKey')
+            ->shouldReceive('decryptEncryptionKey')
             ->withArgs(function (EncryptionKey $key) {
                 return $key->id === $this->encryptionKey->id;
             })

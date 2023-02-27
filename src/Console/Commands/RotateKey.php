@@ -44,8 +44,8 @@ class RotateKey extends Command
         try {
             /** @var string|null $providerName */
             $providerName = $this->argument('provider');
-            $currentKey = $keyManager->retrieveKey($providerName);
-            $keyManager->generateKey($providerName);
+            $currentKey = $keyManager->retrieveEncryptionKey($providerName);
+            $keyManager->generateEncryptionKey($providerName);
             $currentKey->deprecate();
 
             $this->info('encryption key rotation done');

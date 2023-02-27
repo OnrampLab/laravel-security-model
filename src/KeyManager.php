@@ -47,7 +47,7 @@ class KeyManager implements KeyManagerContract
     /**
      * Retrieve a available encryption key
      */
-    public function retrieveKey(?string $providerName = null): EncryptionKey
+    public function retrieveEncryptionKey(?string $providerName = null): EncryptionKey
     {
         $type = Str::kebab(Str::camel($this->getName($providerName)));
         $key = EncryptionKey::where('type', $type)
@@ -64,7 +64,7 @@ class KeyManager implements KeyManagerContract
     /**
      * Generate a new encryption key
      */
-    public function generateKey(?string $providerName = null): EncryptionKey
+    public function generateEncryptionKey(?string $providerName = null): EncryptionKey
     {
         $type = Str::kebab(Str::camel($this->getName($providerName)));
         $provider = $this->resolveProvider($providerName);
@@ -82,7 +82,7 @@ class KeyManager implements KeyManagerContract
     /**
      * Decrypt a encryption key
      */
-    public function decryptKey(EncryptionKey $key): string
+    public function decryptEncryptionKey(EncryptionKey $key): string
     {
         if (isset($this->keys[$key->id])) {
             return $this->keys[$key->id];

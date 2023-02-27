@@ -49,12 +49,12 @@ trait Securable
         $encryptionKey = $this->encryptionKeys()->first();
 
         if (! $encryptionKey) {
-            $encryptionKey = static::$keyManager->retrieveKey();
+            $encryptionKey = static::$keyManager->retrieveEncryptionKey();
 
             $this->encryptionKeys()->attach($encryptionKey->id);
         }
 
-        $dataKey = static::$keyManager->decryptKey($encryptionKey);
+        $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
         $encrypter = App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
 
         $this->setRawAttributes($encrypter->encryptRow($dataKey, $this->getAttributes()));
@@ -69,7 +69,7 @@ trait Securable
             return;
         }
 
-        $dataKey = static::$keyManager->decryptKey($encryptionKey);
+        $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
         $encrypter = App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
 
         $this->setRawAttributes($encrypter->decryptRow($dataKey, $this->getAttributes()), true);
