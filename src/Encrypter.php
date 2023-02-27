@@ -66,6 +66,19 @@ class Encrypter
         return "{$fieldName}_bidx";
     }
 
+    /**
+     * Generate blind indices of data row with provided key
+     */
+    public function generateBlindIndices(string $key, array $dataRow): array
+    {
+        $encryptionRow = $this->buildEncryptionRow($key, $dataRow);
+        /** @var array<string, array<string, string>> $blindIndices */
+        $blindIndices = $encryptionRow->getAllBlindIndexes($dataRow);
+        $blindIndices = array_map(fn ($index) => $index['value'], $blindIndices);
+
+        return $blindIndices;
+    }
+
     protected function buildEncryptionRow(string $key, array $dataRow): EncryptedRow
     {
         $keyProvider = new StringProvider($key);

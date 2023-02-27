@@ -50,4 +50,18 @@ class EncrypterTest extends TestCase
 
         $this->assertEquals($originalRow['email'], $decryptedRow['email']);
     }
+
+    /**
+     * @test
+     */
+    public function generate_blind_indices_should_work(): void
+    {
+        $originalRow = [
+            'email' => 'test@gmail.com',
+        ];
+        $blindIndices = $this->encrypter->generateBlindIndices($this->key, $originalRow);
+        $expectedIndexName = $this->encrypter->formatBlindIndexName('email');
+
+        $this->assertArrayHasKey($expectedIndexName, $blindIndices);
+    }
 }
