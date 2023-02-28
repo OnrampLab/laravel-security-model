@@ -2,11 +2,11 @@
 
 namespace OnrampLab\SecurityModel\Concerns;
 
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use InvalidArgumentException;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
@@ -35,6 +35,16 @@ trait Securable
     public function isEncrypted(): bool
     {
         return (bool) $this->encryptionKeys->first();
+    }
+
+    public function isSearchableEncryptedField(string $fieldName): bool
+    {
+        $field = Collection::make($this->getEncryptableFields())
+            ->first(function (EncryptableField $field) use ($fieldName) {
+                return $field->name === $fieldName && $field->isSearchable;
+            });
+
+        return (bool) $field;
     }
 
     public function shouldBeEncryptable(): bool
@@ -78,6 +88,23 @@ trait Securable
         $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
 
         $this->setRawAttributes($encrypter->decryptRow($dataKey, $this->getAttributes()), true);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function generateBlindIndex(string $fieldName, $value): array
+    {
+        if (! $this->isSearchableEncryptedField($fieldName)) {
+            throw new InvalidArgumentException("The [{$fieldName}] field is not a searchable encrypted field.");
+        }
+
+        $encrypter = $this->getEncrypter();
+        $hashKey = static::$keyManager->retrieveHashKey();
+        $blindIndices = $encrypter->generateBlindIndices($hashKey, [$fieldName => $value]);
+        $indexName = $encrypter->formatBlindIndexName($fieldName);
+
+        return [$indexName => $blindIndices[$indexName]];
     }
 
     protected function getEncrypter(): Encrypter

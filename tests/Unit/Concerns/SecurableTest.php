@@ -158,4 +158,37 @@ class SecurableTest extends TestCase
 
         $this->assertEquals($decryptedRow['email'], $this->model->email);
     }
+
+    /**
+     * @test
+     */
+    public function generate_blind_index_should_work(): void
+    {
+        $hashKey = base64_encode(random_bytes(32));
+
+        $this->keyManagerMock
+            ->shouldReceive('retrieveHashKey')
+            ->once()
+            ->andReturn($hashKey);
+
+        $expectedBlindIndices = [
+            'email_bidx' => Hash::make('test@gmail.com'),
+        ];
+
+        $this->encrypterMock
+            ->shouldReceive('generateBlindIndices')
+            ->once()
+            ->with($hashKey, ['email' => 'test@gmail.com'])
+            ->andReturn($expectedBlindIndices);
+
+        $this->encrypterMock
+            ->shouldReceive('formatBlindIndexName')
+            ->once()
+            ->with('email')
+            ->andReturn('email_bidx');
+
+        $actualBlindIndex = $this->model->generateBlindIndex('email', 'test@gmail.com');
+
+        $this->assertEquals($actualBlindIndex['email_bidx'], $expectedBlindIndices['email_bidx']);
+    }
 }
