@@ -56,10 +56,13 @@ trait Securable
             $this->encryptionKeys()->attach($encryptionKey->id);
         }
 
+        $encrypter = $this->getEncrypter();
         $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
-        $encrypter = App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
+        $encryptedRow = $encrypter->encryptRow($dataKey, $this->getAttributes());
+        $hashKey = static::$keyManager->retrieveHashKey();
+        $blindIndices = $encrypter->generateBlindIndices($hashKey, $this->getAttributes());
 
-        $this->setRawAttributes($encrypter->encryptRow($dataKey, $this->getAttributes()));
+        $this->setRawAttributes(array_merge($encryptedRow, $blindIndices));
         $this->saveQuietly();
     }
 
@@ -71,10 +74,15 @@ trait Securable
             return;
         }
 
+        $encrypter = $this->getEncrypter();
         $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
-        $encrypter = App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
 
         $this->setRawAttributes($encrypter->decryptRow($dataKey, $this->getAttributes()), true);
+    }
+
+    protected function getEncrypter(): Encrypter
+    {
+        return App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
     }
 
     protected function getEncryptableFields(): array

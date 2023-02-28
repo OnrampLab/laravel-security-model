@@ -4,6 +4,7 @@ namespace OnrampLab\SecurityModel\Tests\Unit\Concerns;
 
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 use Mockery;
 use Mockery\MockInterface;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
@@ -30,6 +31,7 @@ class SecurableTest extends TestCase
     protected function defineDatabaseMigrations()
     {
         $this->loadLaravelMigrations();
+        $this->loadMigrationsFrom(__DIR__ . '/../../Migrations');
     }
 
     protected function setUp(): void
@@ -93,6 +95,13 @@ class SecurableTest extends TestCase
             ->with($this->encryptionKey)
             ->andReturn($dataKey);
 
+        $hashKey = base64_encode(random_bytes(32));
+
+        $this->keyManagerMock
+            ->shouldReceive('retrieveHashKey')
+            ->once()
+            ->andReturn($hashKey);
+
         $encryptedRow = [
             'email' => Crypt::encrypt('test@gmail.com'),
         ];
@@ -103,9 +112,20 @@ class SecurableTest extends TestCase
             ->with($dataKey, $this->model->getAttributes())
             ->andReturn($encryptedRow);
 
+        $blindIndices = [
+            'email_bidx' => Hash::make('test@gmail.com'),
+        ];
+
+        $this->encrypterMock
+            ->shouldReceive('generateBlindIndices')
+            ->once()
+            ->with($hashKey, $this->model->getAttributes())
+            ->andReturn($blindIndices);
+
         $this->model->encrypt();
 
         $this->assertEquals($encryptedRow['email'], $this->model->email);
+        $this->assertEquals($blindIndices['email_bidx'], $this->model->email_bidx);
     }
 
     /**

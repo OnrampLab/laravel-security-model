@@ -15,6 +15,7 @@ class User extends BaseUser implements SecurableContract
 
     protected $fillable = [
         'email',
+        'email_bidx',
     ];
 
     protected $encryptable = [
