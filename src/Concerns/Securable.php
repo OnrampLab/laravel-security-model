@@ -5,11 +5,13 @@ namespace OnrampLab\SecurityModel\Concerns;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\Observers\ModelObserver;
+use OnrampLab\SecurityModel\ValueObjects\EncryptableField;
 
 /**
  * @mixin Model
@@ -77,11 +79,19 @@ trait Securable
 
     protected function getEncryptableFields(): array
     {
-        $fillableFields = $this->getFillable();
-        $encryptableFields = array_intersect($this->encryptable ?? [], $fillableFields);
-        $attributeFields = array_keys($this->getAttributes());
-        $encryptableFields = array_intersect($attributeFields, $encryptableFields);
+        $fields = array_intersect_key($this->encryptable ?? [], array_flip($this->getFillable()));
+        $fields = array_intersect_key($fields, $this->getAttributes());
+        $fields = Collection::make($fields)
+            ->map(function (array $field, string $name) {
+                return new EncryptableField([
+                    'name' => $name,
+                    'type' => $field['type'],
+                    'is_searchable' => data_get($field, 'searchable', false),
+                ]);
+            })
+            ->values()
+            ->toArray();
 
-        return array_values($encryptableFields);
+        return $fields;
     }
 }

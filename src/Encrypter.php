@@ -2,6 +2,7 @@
 
 namespace OnrampLab\SecurityModel;
 
+use OnrampLab\SecurityModel\ValueObjects\EncryptableField;
 use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
@@ -11,6 +12,14 @@ use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 class Encrypter
 {
+    public const FIELD_TYPE_MAPPING = [
+        'string' => Constants::TYPE_TEXT,
+        'json' => Constants::TYPE_JSON,
+        'integer' => Constants::TYPE_INT,
+        'float' => Constants::TYPE_FLOAT,
+        'boolean' => Constants::TYPE_BOOLEAN,
+    ];
+
     /**
      * The name of database table contains encrypted data row
      */
@@ -18,6 +27,8 @@ class Encrypter
 
     /**
      * The fields of row needed to be encrypted
+     *
+     * @var array<EncryptableField>
      */
     protected array $fields;
 
@@ -63,9 +74,11 @@ class Encrypter
         $row = new EncryptedRow($engine, $this->tableName);
 
         foreach ($this->fields as $field) {
-            $row
-                ->addField($field, Constants::TYPE_TEXT)
-                ->addBlindIndex($field, new BlindIndex($this->formatBlindIndexName($field)));
+            $row->addField($field->name, self::FIELD_TYPE_MAPPING[$field->type]);
+
+            if ($field->isSearchable) {
+                $row->addBlindIndex($field->name, new BlindIndex($this->formatBlindIndexName($field->name)));
+            }
         }
 
         return $row;

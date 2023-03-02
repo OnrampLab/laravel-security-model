@@ -18,7 +18,7 @@ class User extends BaseUser implements SecurableContract
     ];
 
     protected $encryptable = [
-        'email',
+        'email' => ['type' => 'string', 'searchable' => true],
     ];
 
     protected static function newFactory(): Factory

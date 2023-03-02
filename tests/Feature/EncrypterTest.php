@@ -4,11 +4,14 @@ namespace OnrampLab\SecurityModel\Tests\Feature;
 
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Tests\TestCase;
+use OnrampLab\SecurityModel\ValueObjects\EncryptableField;
 use ParagonIE\ConstantTime\Hex;
 
 class EncrypterTest extends TestCase
 {
     private string $key;
+
+    private EncryptableField $field;
 
     private Encrypter $encrypter;
 
@@ -17,7 +20,8 @@ class EncrypterTest extends TestCase
         parent::setUp();
 
         $this->key = Hex::encode(random_bytes(32));
-        $this->encrypter = new Encrypter('users', ['email']);
+        $this->field = new EncryptableField(['name' => 'email', 'type' => 'string', 'is_searchable' => true]);
+        $this->encrypter = new Encrypter('users', [$this->field]);
     }
 
     /**
