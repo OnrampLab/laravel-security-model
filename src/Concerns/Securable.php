@@ -80,7 +80,6 @@ trait Securable
     protected function getEncryptableFields(): array
     {
         $fields = array_intersect_key($this->encryptable ?? [], array_flip($this->getFillable()));
-        $fields = array_intersect_key($fields, $this->getAttributes());
         $fields = Collection::make($fields)
             ->map(function (array $field, string $name) {
                 return new EncryptableField([

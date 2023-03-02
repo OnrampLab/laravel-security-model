@@ -43,7 +43,7 @@ class Encrypter
      */
     public function encryptRow(string $key, array $dataRow): array
     {
-        $encryptionRow = $this->buildEncryptionRow($key);
+        $encryptionRow = $this->buildEncryptionRow($key, $dataRow);
 
         return $encryptionRow->encryptRow($dataRow);
     }
@@ -53,7 +53,7 @@ class Encrypter
      */
     public function decryptRow(string $key, array $dataRow): array
     {
-        $encryptionRow = $this->buildEncryptionRow($key);
+        $encryptionRow = $this->buildEncryptionRow($key, $dataRow);
 
         return $encryptionRow->decryptRow($dataRow);
     }
@@ -66,21 +66,26 @@ class Encrypter
         return "{$fieldName}_bidx";
     }
 
-    protected function buildEncryptionRow(string $key): EncryptedRow
+    protected function buildEncryptionRow(string $key, array $dataRow): EncryptedRow
     {
         $keyProvider = new StringProvider($key);
         $backend = new BoringCrypto();
         $engine = new CipherSweet($keyProvider, $backend);
-        $row = new EncryptedRow($engine, $this->tableName);
+        $encryptedRow = new EncryptedRow($engine, $this->tableName);
+        $dataFields = array_keys($dataRow);
 
         foreach ($this->fields as $field) {
-            $row->addField($field->name, self::FIELD_TYPE_MAPPING[$field->type]);
+            if (! in_array($field->name, $dataFields)) {
+                continue;
+            }
+
+            $encryptedRow->addField($field->name, self::FIELD_TYPE_MAPPING[$field->type]);
 
             if ($field->isSearchable) {
-                $row->addBlindIndex($field->name, new BlindIndex($this->formatBlindIndexName($field->name)));
+                $encryptedRow->addBlindIndex($field->name, new BlindIndex($this->formatBlindIndexName($field->name)));
             }
         }
 
-        return $row;
+        return $encryptedRow;
     }
 }
