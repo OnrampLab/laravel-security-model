@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use InvalidArgumentException;
+use OnrampLab\SecurityModel\Builders\ModelBuilder;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
@@ -105,6 +106,14 @@ trait Securable
         $indexName = $encrypter->formatBlindIndexName($fieldName);
 
         return [$indexName => $blindIndices[$indexName]];
+    }
+
+    /**
+     * Create a new Eloquent query builder for the model.
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new ModelBuilder($query);
     }
 
     protected function getEncrypter(): Encrypter
