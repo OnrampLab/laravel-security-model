@@ -117,6 +117,12 @@ class User extends Model implements SecurableContract
     
     Determinate whether the encryptable field is searchable. If the field is searchable, you should make a migration to create a new column to store blind index value for searching. 
 
+### Searchable Encrypted Field
+
+To achieve searching on encrypted fields, we use a strategy called **blind indexing**. Its idea is to store a hash value of the plaintext in a separate column and would it will be used for searching.
+
+That means if you define a encryptable field to be searchable, you should postfix the original column name with `_bidx` to create a new column. For example, if you define a `email` column to be searchable, then you need to create a `email_bidx` column in your table.
+
 ### Conditional Encryption
 
 Sometimes you may need to determinate whether a model should be encrypted under certain conditions. To accomplish this, you may define a `shouldBeEncryptable` method on your model:
