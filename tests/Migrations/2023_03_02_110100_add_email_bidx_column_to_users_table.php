@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('model_has_encryption_keys', function (Blueprint $table) {
-            $table->foreignId('encryption_key_id')->constrained();
-            $table->morphs('encryptable');
+        Schema::table('users', function (Blueprint $table) {
+            $table->text('email_bidx')->nullable(true);
         });
     }
 
@@ -26,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('model_has_encryption_keys');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('email_bidx');
+        });
     }
 };

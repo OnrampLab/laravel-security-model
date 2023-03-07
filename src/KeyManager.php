@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use OnrampLab\SecurityModel\Contracts\KeyManager as KeyManagerContract;
 use OnrampLab\SecurityModel\Contracts\KeyProvider;
+use OnrampLab\SecurityModel\Exceptions\KeyNotExistedException;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\ValueObjects\Ciphertext;
 use ParagonIE\ConstantTime\Hex;
@@ -45,19 +46,24 @@ class KeyManager implements KeyManagerContract
     /**
      * Retrieve a available encryption key
      */
-    public function retrieveKey(?string $providerName = null): ?EncryptionKey
+    public function retrieveEncryptionKey(?string $providerName = null): EncryptionKey
     {
         $type = Str::kebab(Str::camel($this->getName($providerName)));
-
-        return EncryptionKey::where('type', $type)
+        $key = EncryptionKey::where('type', $type)
             ->where('is_primary', true)
             ->first();
+
+        if (! $key) {
+            throw KeyNotExistedException::create('encryption key');
+        }
+
+        return $key;
     }
 
     /**
      * Generate a new encryption key
      */
-    public function generateKey(?string $providerName = null): EncryptionKey
+    public function generateEncryptionKey(?string $providerName = null): EncryptionKey
     {
         $type = Str::kebab(Str::camel($this->getName($providerName)));
         $provider = $this->resolveProvider($providerName);
@@ -75,7 +81,7 @@ class KeyManager implements KeyManagerContract
     /**
      * Decrypt a encryption key
      */
-    public function decryptKey(EncryptionKey $key): string
+    public function decryptEncryptionKey(EncryptionKey $key): string
     {
         if (isset($this->keys[$key->id])) {
             return $this->keys[$key->id];
@@ -92,6 +98,28 @@ class KeyManager implements KeyManagerContract
         $this->keys[$key->id] = $plaintext;
 
         return $plaintext;
+    }
+
+    /**
+     * Retrieve a available hash key
+     */
+    public function retrieveHashKey(): string
+    {
+        $key = $this->app['config']['security_model.hash_key'] ?? '';
+
+        if (! $key) {
+            throw KeyNotExistedException::create('hash key');
+        }
+
+        return $key;
+    }
+
+    /**
+     * Generate a new hash key
+     */
+    public function generateHashKey(): string
+    {
+        return Hex::encode(random_bytes(32));
     }
 
     /**

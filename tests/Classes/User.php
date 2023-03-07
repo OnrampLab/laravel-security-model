@@ -15,10 +15,11 @@ class User extends BaseUser implements SecurableContract
 
     protected $fillable = [
         'email',
+        'email_bidx',
     ];
 
     protected $encryptable = [
-        'email',
+        'email' => ['type' => 'string', 'searchable' => true],
     ];
 
     protected static function newFactory(): Factory

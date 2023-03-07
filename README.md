@@ -43,7 +43,7 @@ php artisan vendor:publish --tag="security-model-config"
 ### Configuration
 
 1. Set up credentials for key provider you want to use for encryption
-2. Generate a encryption key
+2. Run command to generate a encryption key and a hash key
 
     ```bash
     php artisan security-model:generate-key
@@ -51,7 +51,7 @@ php artisan vendor:publish --tag="security-model-config"
 
 3. Use the `Securable` trait in a model
 4. Implement the `Securable` interface in a model
-5. Set up `$encryptable` array attribute in a model to define which fields needed to be encrypted
+5. Set up `$encryptable` attribute in a model to define encryptable fields. You can check out the [section](#encryptable-field-parameters) below for more info about field parameters
 
 ```php
 use Illuminate\Database\Eloquent\Model;
@@ -74,12 +74,54 @@ class User extends Model implements SecurableContract
      * The attributes that are needed to be encrypted.
      */
     protected array $encryptable = [
-        'phone',
-        'email',
+        'phone' => ['type' => 'string'],
+        'email' => ['type' => 'string', 'searchable' => true],
     ];
 }
 
 ```
+
+### Encryptable Field Parameters
+
+- type
+
+  - Type
+  
+    string
+  
+  - Required
+  
+    yes  
+
+  - Description
+
+    Determinate content type of the encryptable field. Here are available types:
+
+      - `string`
+      - `json`
+      - `integer`
+      - `float`
+      - `boolean`
+
+- searchable
+
+  - Type
+  
+    boolean
+  
+  - Required
+  
+    no  
+
+  - Description
+    
+    Determinate whether the encryptable field is searchable. If the field is searchable, you should make a migration to create a new column to store blind index value for searching. 
+
+### Searchable Encrypted Field
+
+To achieve searching on encrypted fields, we use a strategy called **blind indexing**. Its idea is to store a hash value of the plaintext in a separate column and would it will be used for searching.
+
+That means if you define a encryptable field to be searchable, you should postfix the original column name with `_bidx` to create a new column. For example, if you define a `email` column to be searchable, then you need to create a `email_bidx` column in your table.
 
 ### Conditional Encryption
 

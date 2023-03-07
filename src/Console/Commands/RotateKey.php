@@ -44,15 +44,11 @@ class RotateKey extends Command
         try {
             /** @var string|null $providerName */
             $providerName = $this->argument('provider');
-            $currentKey = $keyManager->retrieveKey($providerName);
+            $currentKey = $keyManager->retrieveEncryptionKey($providerName);
+            $keyManager->generateEncryptionKey($providerName);
+            $currentKey->deprecate();
 
-            if ($currentKey) {
-                $keyManager->generateKey($providerName);
-                $currentKey->deprecate();
-                $this->info('encryption key rotation done');
-            } else {
-                $this->info('there is no encryption key needed to be rotated');
-            }
+            $this->info('encryption key rotation done');
 
             DB::commit();
 

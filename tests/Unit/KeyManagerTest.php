@@ -2,6 +2,7 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
@@ -54,13 +55,13 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
-    public function retrieve_key_should_work(): void
+    public function retrieve_encryption_key_should_work(): void
     {
         $expectedKey = EncryptionKey::factory([
             'type' => Str::kebab(Str::camel($this->providerName)),
             'is_primary' => true,
         ])->create();
-        $actualKey = $this->manager->retrieveKey($this->providerName);
+        $actualKey = $this->manager->retrieveEncryptionKey($this->providerName);
 
         $this->assertEquals($expectedKey->id, $actualKey->id);
     }
@@ -68,7 +69,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
-    public function generate_key_should_work(): void
+    public function generate_encryption_key_should_work(): void
     {
         $ciphertext = new Ciphertext([
             'key_id' => Str::uuid()->toString(),
@@ -83,7 +84,7 @@ class KeyManagerTest extends TestCase
             })
             ->andReturn($ciphertext);
 
-        $encryptionKey = $this->manager->generateKey($this->providerName);
+        $encryptionKey = $this->manager->generateEncryptionKey($this->providerName);
 
         $this->assertEquals($encryptionKey->type, Str::kebab(Str::camel($this->providerName)));
         $this->assertEquals($encryptionKey->key_id, $ciphertext->keyId);
@@ -94,7 +95,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
-    public function decrypt_key_should_work(): void
+    public function decrypt_encryption_key_should_work(): void
     {
         $encryptionKey = EncryptionKey::factory([
             'type' => Str::kebab(Str::camel($this->providerName)),
@@ -110,9 +111,33 @@ class KeyManagerTest extends TestCase
             })
             ->andReturn($expectedText);
 
-        $actualText = $this->manager->decryptKey($encryptionKey);
+        $actualText = $this->manager->decryptEncryptionKey($encryptionKey);
 
         $this->assertEquals($expectedText, $actualText);
+    }
+
+    /**
+     * @test
+     */
+    public function retrieve_hash_key_should_work(): void
+    {
+        $expectedKey = Hex::encode(random_bytes(32));
+
+        Config::set('security_model.hash_key', $expectedKey);
+
+        $actualKey = $this->manager->retrieveHashKey();
+
+        $this->assertEquals($expectedKey, $actualKey);
+    }
+
+    /**
+     * @test
+     */
+    public function generate_hash_key_should_work(): void
+    {
+        $hashKey = $this->manager->generateHashKey();
+
+        $this->assertEquals(32, strlen(Hex::decode($hashKey)));
     }
 
     /**

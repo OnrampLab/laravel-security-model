@@ -2,19 +2,17 @@
 
 namespace OnrampLab\SecurityModel\Concerns;
 
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use InvalidArgumentException;
+use OnrampLab\SecurityModel\Builders\ModelBuilder;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
+use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\Observers\ModelObserver;
-use ParagonIE\CipherSweet\Backend\BoringCrypto;
-use ParagonIE\CipherSweet\BlindIndex;
-use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\Constants;
-use ParagonIE\CipherSweet\EncryptedRow;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
+use OnrampLab\SecurityModel\ValueObjects\EncryptableField;
 
 /**
  * @mixin Model
@@ -40,6 +38,16 @@ trait Securable
         return (bool) $this->encryptionKeys->first();
     }
 
+    public function isSearchableEncryptedField(string $fieldName): bool
+    {
+        $field = Collection::make($this->getEncryptableFields())
+            ->first(function (EncryptableField $field) use ($fieldName) {
+                return $field->name === $fieldName && $field->isSearchable;
+            });
+
+        return (bool) $field;
+    }
+
     public function shouldBeEncryptable(): bool
     {
         return true;
@@ -54,19 +62,18 @@ trait Securable
         $encryptionKey = $this->encryptionKeys()->first();
 
         if (! $encryptionKey) {
-            $encryptionKey = static::$keyManager->retrieveKey();
-
-            if (! $encryptionKey) {
-                throw new Exception('Should generate a key first before encrypting model');
-            }
+            $encryptionKey = static::$keyManager->retrieveEncryptionKey();
 
             $this->encryptionKeys()->attach($encryptionKey->id);
         }
 
-        $dataKey = static::$keyManager->decryptKey($encryptionKey);
-        $encryptionRow = $this->buildEncryptionRow($dataKey);
+        $encrypter = $this->getEncrypter();
+        $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
+        $encryptedRow = $encrypter->encryptRow($dataKey, $this->getAttributes());
+        $hashKey = static::$keyManager->retrieveHashKey();
+        $blindIndices = $encrypter->generateBlindIndices($hashKey, $this->getAttributes());
 
-        $this->setRawAttributes($encryptionRow->encryptRow($this->getAttributes()));
+        $this->setRawAttributes(array_merge($encryptedRow, $blindIndices));
         $this->saveQuietly();
     }
 
@@ -78,36 +85,53 @@ trait Securable
             return;
         }
 
-        $dataKey = static::$keyManager->decryptKey($encryptionKey);
-        $encryptionRow = $this->buildEncryptionRow($dataKey);
+        $encrypter = $this->getEncrypter();
+        $dataKey = static::$keyManager->decryptEncryptionKey($encryptionKey);
 
-        $this->setRawAttributes($encryptionRow->decryptRow($this->getAttributes()), true);
+        $this->setRawAttributes($encrypter->decryptRow($dataKey, $this->getAttributes()), true);
     }
 
-    protected function buildEncryptionRow(string $dataKey): EncryptedRow
+    /**
+     * @param mixed $value
+     */
+    public function generateBlindIndex(string $fieldName, $value): array
     {
-        $keyProvider = new StringProvider($dataKey);
-        $backend = new BoringCrypto();
-        $engine = new CipherSweet($keyProvider, $backend);
-        $row = new EncryptedRow($engine, $this->getTable());
-        $fields = $this->getEncryptableFields();
-
-        foreach ($fields as $field) {
-            $row
-                ->addField($field, Constants::TYPE_TEXT)
-                ->addBlindIndex($field, new BlindIndex("{$field}_index"));
+        if (! $this->isSearchableEncryptedField($fieldName)) {
+            throw new InvalidArgumentException("The [{$fieldName}] field is not a searchable encrypted field.");
         }
 
-        return $row;
+        $encrypter = $this->getEncrypter();
+        $hashKey = static::$keyManager->retrieveHashKey();
+        $blindIndices = $encrypter->generateBlindIndices($hashKey, [$fieldName => $value]);
+        $indexName = $encrypter->formatBlindIndexName($fieldName);
+
+        return [$indexName => $blindIndices[$indexName]];
+    }
+
+    /**
+     * Create a new Eloquent query builder for the model.
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new ModelBuilder($query);
+    }
+
+    protected function getEncrypter(): Encrypter
+    {
+        return App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
     }
 
     protected function getEncryptableFields(): array
     {
-        $fillableFields = $this->getFillable();
-        $encryptableFields = array_intersect($this->encryptable ?? [], $fillableFields);
-        $attributeFields = array_keys($this->getAttributes());
-        $encryptableFields = array_intersect($attributeFields, $encryptableFields);
-
-        return array_values($encryptableFields);
+        return Collection::make($this->encryptable ?? [])
+            ->map(function (array $field, string $name) {
+                return new EncryptableField([
+                    'name' => $name,
+                    'type' => $field['type'],
+                    'is_searchable' => data_get($field, 'searchable', false),
+                ]);
+            })
+            ->values()
+            ->toArray();
     }
 }
