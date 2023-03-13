@@ -26,25 +26,23 @@ class EncrypterTest extends TestCase
 
     /**
      * @test
+     * @testWith [{"email": "test@gmail.com"}, true]
+     *           [{"email": null}, false]
      */
-    public function encrypt_row_should_work(): void
+    public function encrypt_row_should_work(array $originalRow, bool $expectedResult): void
     {
-        $originalRow = [
-            'email' => 'test@gmail.com',
-        ];
         $encryptedRow = $this->encrypter->encryptRow($this->key, $originalRow);
 
-        $this->assertNotEquals($originalRow['email'], $encryptedRow['email']);
+        $this->assertEquals($expectedResult, $originalRow['email'] !== $encryptedRow['email']);
     }
 
     /**
      * @test
+     * @testWith [{"email": "test@gmail.com"}]
+     *           [{"email": null}]
      */
-    public function decrypt_row_should_work(): void
+    public function decrypt_row_should_work(array $originalRow): void
     {
-        $originalRow = [
-            'email' => 'test@gmail.com',
-        ];
         $encryptedRow = $this->encrypter->encryptRow($this->key, $originalRow);
         $decryptedRow = $this->encrypter->decryptRow($this->key, $encryptedRow);
 

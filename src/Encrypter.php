@@ -85,10 +85,9 @@ class Encrypter
         $backend = new BoringCrypto();
         $engine = new CipherSweet($keyProvider, $backend);
         $encryptedRow = new EncryptedRow($engine, $this->tableName);
-        $dataFields = array_keys($dataRow);
 
         foreach ($this->fields as $field) {
-            if (! in_array($field->name, $dataFields)) {
+            if (! array_key_exists($field->name, $dataRow) || is_null($dataRow[$field->name])) {
                 continue;
             }
 
