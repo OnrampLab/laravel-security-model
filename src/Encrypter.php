@@ -74,9 +74,18 @@ class Encrypter
         $encryptionRow = $this->buildEncryptionRow($key, $dataRow);
         /** @var array<string, array<string, string>> $blindIndices */
         $blindIndices = $encryptionRow->getAllBlindIndexes($dataRow);
-        $blindIndices = array_map(fn ($index) => $index['value'], $blindIndices);
+        $result = [];
 
-        return $blindIndices;
+        foreach ($this->fields as $field) {
+            if (! array_key_exists($field->name, $dataRow) || ! $field->isSearchable) {
+                continue;
+            }
+
+            $indexName = $this->formatBlindIndexName($field->name);
+            $result[$indexName] = data_get($blindIndices, "{$indexName}.value");
+        }
+
+        return $result;
     }
 
     protected function buildEncryptionRow(string $key, array $dataRow): EncryptedRow
@@ -85,10 +94,9 @@ class Encrypter
         $backend = new BoringCrypto();
         $engine = new CipherSweet($keyProvider, $backend);
         $encryptedRow = new EncryptedRow($engine, $this->tableName);
-        $dataFields = array_keys($dataRow);
 
         foreach ($this->fields as $field) {
-            if (! in_array($field->name, $dataFields)) {
+            if (! array_key_exists($field->name, $dataRow) || is_null($dataRow[$field->name])) {
                 continue;
             }
 
