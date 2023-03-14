@@ -5,6 +5,7 @@
     "cond",
     "encryptable",
     "encrypter",
-    "onramplab"
+    "onramplab",
+    "redactable"
   ]
 }

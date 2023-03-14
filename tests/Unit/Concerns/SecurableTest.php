@@ -85,6 +85,18 @@ class SecurableTest extends TestCase
 
     /**
      * @test
+     * @testWith ["email", true]
+     *           ["phone", false]
+     */
+    public function is_redactable_fields_should_work(string $fieldName, bool $expectedResult): void
+    {
+        $actualResult = $this->model->isRedactableField($fieldName);
+
+        $this->assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * @test
      */
     public function should_be_encrytable_should_work(): void
     {

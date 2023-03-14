@@ -48,6 +48,11 @@ trait Securable
         return (bool) $field;
     }
 
+    public function isRedactableField(string $fieldName): bool
+    {
+        return in_array($fieldName, $this->getRedactableFields());
+    }
+
     public function shouldBeEncryptable(): bool
     {
         return true;
@@ -133,5 +138,10 @@ trait Securable
             })
             ->values()
             ->toArray();
+    }
+
+    protected function getRedactableFields(): array
+    {
+        return array_keys($this->redactable ?? []);
     }
 }
