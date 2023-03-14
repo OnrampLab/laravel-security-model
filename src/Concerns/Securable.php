@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App;
 use InvalidArgumentException;
 use OnrampLab\SecurityModel\Builders\ModelBuilder;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
+use OnrampLab\SecurityModel\Contracts\Redactor;
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\Observers\ModelObserver;
@@ -119,6 +120,42 @@ trait Securable
     public function newEloquentBuilder($query)
     {
         return new ModelBuilder($query);
+    }
+
+    /**
+     * Get an attribute from the model.
+     */
+    public function getAttribute($key)
+    {
+        return $this->isRedactedAttribute($key)
+            ? $this->getRedactedAttribute($key)
+            : parent::getAttribute($key);
+    }
+
+    protected function isRedactedAttribute(string $key): bool
+    {
+        return preg_match('/(.+)_redacted/', $key, $matches) && $this->isRedactableField($matches[1]);
+    }
+
+    protected function getRedactedAttribute(string $key): ?string
+    {
+        preg_match('/(.+)_redacted/', $key, $matches);
+
+        $key = $matches[1];
+        $redactor = $this->resolveRedactorClass($key);
+
+        return $redactor->redact($this->getAttributeFromArray($key));
+    }
+
+    protected function resolveRedactorClass(string $key): Redactor
+    {
+        $className = data_get($this->redactable ?? [], $key);
+
+        if (! class_exists($className) || ! is_subclass_of($className, Redactor::class)) {
+            throw new InvalidArgumentException("The [{$className}] class is not a valid redactor");
+        }
+
+        return App::make($className);
     }
 
     protected function getEncrypter(): Encrypter
