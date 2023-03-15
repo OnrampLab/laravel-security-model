@@ -39,14 +39,16 @@ trait Securable
         return (bool) $this->encryptionKeys->first();
     }
 
-    public function isSearchableEncryptedField(string $fieldName): bool
+    public function isEncryptableField(string $fieldName, ?bool $isSearchable = null): bool
     {
-        $field = Collection::make($this->getEncryptableFields())
-            ->first(function (EncryptableField $field) use ($fieldName) {
-                return $field->name === $fieldName && $field->isSearchable;
-            });
+        $fields = Collection::make($this->getEncryptableFields())
+            ->filter(fn (EncryptableField $field) => $field->name === $fieldName);
 
-        return (bool) $field;
+        if (! is_null($isSearchable)) {
+            $fields = $fields->filter(fn (EncryptableField $field) => $field->isSearchable === $isSearchable);
+        }
+
+        return (bool) $fields->first();
     }
 
     public function isRedactableField(string $fieldName): bool
@@ -102,7 +104,7 @@ trait Securable
      */
     public function generateBlindIndex(string $fieldName, $value): array
     {
-        if (! $this->isSearchableEncryptedField($fieldName)) {
+        if (! $this->isEncryptableField($fieldName, true)) {
             throw new InvalidArgumentException("The [{$fieldName}] field is not a searchable encrypted field.");
         }
 

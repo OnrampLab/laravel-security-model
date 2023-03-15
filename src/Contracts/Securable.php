@@ -10,7 +10,7 @@ interface Securable
 
     public function isEncrypted(): bool;
 
-    public function isSearchableEncryptedField(string $fieldName): bool;
+    public function isEncryptableField(string $fieldName, ?bool $isSearchable = null): bool;
 
     public function isRedactableField(string $fieldName): bool;
 

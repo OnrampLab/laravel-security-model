@@ -85,10 +85,23 @@ class SecurableTest extends TestCase
 
     /**
      * @test
+     * @testWith ["email", true, true]
+     *           ["email", null, true]
+     *           ["phone", null, false]
+     */
+    public function is_encryptable_field_should_work(string $fieldName, ?bool $isSearchable, bool $expectedResult): void
+    {
+        $actualResult = $this->model->isEncryptableField($fieldName, $isSearchable);
+
+        $this->assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * @test
      * @testWith ["email", true]
      *           ["phone", false]
      */
-    public function is_redactable_fields_should_work(string $fieldName, bool $expectedResult): void
+    public function is_redactable_field_should_work(string $fieldName, bool $expectedResult): void
     {
         $actualResult = $this->model->isRedactableField($fieldName);
 
