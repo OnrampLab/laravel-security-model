@@ -3,10 +3,15 @@
 namespace OnrampLab\SecurityModel\Contracts;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use OnrampLab\SecurityModel\ValueObjects\EncryptableField;
 
 interface Securable
 {
     public function encryptionKeys(): MorphToMany;
+
+    public function getEncryptableFields(): array;
+
+    public function getRedactableFields(): array;
 
     public function isEncrypted(): bool;
 

@@ -3,6 +3,7 @@
 namespace OnrampLab\SecurityModel\Tests\Unit\Concerns;
 
 use Closure;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
@@ -81,6 +82,28 @@ class SecurableTest extends TestCase
         $this->model->encryptionKeys()->attach($this->encryptionKey->id);
 
         $this->assertTrue($this->model->isEncrypted());
+    }
+
+    /**
+     * @test
+     */
+    public function get_encryptable_fields_should_work(): void
+    {
+        $expectedResult = ['email'];
+        $actualResult = Collection::make($this->model->getEncryptableFields())->pluck('name')->toArray();
+
+        $this->assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * @test
+     */
+    public function get_redactable_fields_should_work(): void
+    {
+        $expectedResult = ['email'];
+        $actualResult = $this->model->getRedactableFields();
+
+        $this->assertEquals($expectedResult, $actualResult);
     }
 
     /**

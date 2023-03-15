@@ -34,6 +34,31 @@ trait Securable
         return $this->morphToMany(EncryptionKey::class, 'encryptable', 'model_has_encryption_keys');
     }
 
+    /**
+     * @return array<EncryptableField>
+     */
+    public function getEncryptableFields(): array
+    {
+        return Collection::make($this->encryptable ?? [])
+            ->map(function (array $field, string $name) {
+                return new EncryptableField([
+                    'name' => $name,
+                    'type' => $field['type'],
+                    'is_searchable' => data_get($field, 'searchable', false),
+                ]);
+            })
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getRedactableFields(): array
+    {
+        return array_keys($this->redactable ?? []);
+    }
+
     public function isEncrypted(): bool
     {
         return (bool) $this->encryptionKeys->first();
@@ -163,24 +188,5 @@ trait Securable
     protected function getEncrypter(): Encrypter
     {
         return App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
-    }
-
-    protected function getEncryptableFields(): array
-    {
-        return Collection::make($this->encryptable ?? [])
-            ->map(function (array $field, string $name) {
-                return new EncryptableField([
-                    'name' => $name,
-                    'type' => $field['type'],
-                    'is_searchable' => data_get($field, 'searchable', false),
-                ]);
-            })
-            ->values()
-            ->toArray();
-    }
-
-    protected function getRedactableFields(): array
-    {
-        return array_keys($this->redactable ?? []);
     }
 }
