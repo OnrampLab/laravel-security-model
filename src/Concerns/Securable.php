@@ -29,12 +29,17 @@ trait Securable
         static::$keyManager = App::make(KeyManager::class);
     }
 
+    /**
+     * Get encryption keys the model used
+     */
     public function encryptionKeys(): MorphToMany
     {
         return $this->morphToMany(EncryptionKey::class, 'encryptable', 'model_has_encryption_keys');
     }
 
     /**
+     * Get encryptable fields the model defined
+     *
      * @return array<EncryptableField>
      */
     public function getEncryptableFields(): array
@@ -52,6 +57,8 @@ trait Securable
     }
 
     /**
+     * Get redactable fields the model defined
+     *
      * @return array<string>
      */
     public function getRedactableFields(): array
@@ -59,11 +66,17 @@ trait Securable
         return array_keys($this->redactable ?? []);
     }
 
+    /**
+     * Determine if the model is encrypted
+     */
     public function isEncrypted(): bool
     {
         return (bool) $this->encryptionKeys->first();
     }
 
+    /**
+     * Determine if the given field is encryptable
+     */
     public function isEncryptableField(string $fieldName, ?bool $isSearchable = null): bool
     {
         $fields = Collection::make($this->getEncryptableFields())
@@ -76,16 +89,25 @@ trait Securable
         return (bool) $fields->first();
     }
 
+    /**
+     * Determine if the given field is redactable
+     */
     public function isRedactableField(string $fieldName): bool
     {
         return in_array($fieldName, $this->getRedactableFields());
     }
 
+    /**
+     * Determine if the model should be encryptable.
+     */
     public function shouldBeEncryptable(): bool
     {
         return true;
     }
 
+    /**
+     * Encrypt data of the model
+     */
     public function encrypt(): void
     {
         if (! $this->shouldBeEncryptable()) {
@@ -110,6 +132,9 @@ trait Securable
         $this->saveQuietly();
     }
 
+    /**
+     * Decrypt data of the model
+     */
     public function decrypt(): void
     {
         $encryptionKey = $this->encryptionKeys()->first();
@@ -125,6 +150,8 @@ trait Securable
     }
 
     /**
+     * Generate blind index value for the given field
+     *
      * @param mixed $value
      */
     public function generateBlindIndex(string $fieldName, $value): array
@@ -143,6 +170,8 @@ trait Securable
 
     /**
      * Create a new Eloquent query builder for the model.
+     *
+     * @see \Illuminate\Database\Eloquent\Model
      */
     public function newEloquentBuilder($query)
     {
@@ -151,6 +180,8 @@ trait Securable
 
     /**
      * Get an attribute from the model.
+     *
+     * @see \Illuminate\Database\Eloquent\Concerns\HasAttributes
      */
     public function getAttribute($key)
     {
