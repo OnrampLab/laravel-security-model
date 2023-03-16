@@ -14,8 +14,10 @@ class ZipCodeRedactor implements Redactor
 
     /**
      * @param mixed $value
+     *
+     * @return mixed
      */
-    public function redact($value): string
+    public function redact($value)
     {
         $isMatched = preg_match(self::PATTERN, (string) $value);
 
@@ -23,7 +25,7 @@ class ZipCodeRedactor implements Redactor
             return $value;
         }
 
-        $callback = function (array $matches) {
+        $callback = static function (array $matches) {
             $character = '*';
 
             return Str::mask($matches[0], $character, 1, 3);

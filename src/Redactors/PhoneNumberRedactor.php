@@ -14,8 +14,10 @@ class PhoneNumberRedactor implements Redactor
 
     /**
      * @param mixed $value
+     *
+     * @return mixed
      */
-    public function redact($value): string
+    public function redact($value)
     {
         $isMatched = preg_match(self::PATTERN, (string) $value);
 
@@ -23,7 +25,7 @@ class PhoneNumberRedactor implements Redactor
             return $value;
         }
 
-        $callback = function (array $matches) {
+        $callback = static function (array $matches) {
             $character = '*';
             $matches[4] = Str::mask($matches[4], $character, 0);
             $matches[6] = Str::mask($matches[6], $character, 0, 2);

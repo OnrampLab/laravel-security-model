@@ -14,8 +14,10 @@ class NameRedactor implements Redactor
 
     /**
      * @param mixed $value
+     *
+     * @return mixed
      */
-    public function redact($value): string
+    public function redact($value)
     {
         $isMatched = preg_match(self::PATTERN, (string) $value);
 
@@ -23,7 +25,7 @@ class NameRedactor implements Redactor
             return $value;
         }
 
-        $callback = function (array $matches) {
+        $callback = static function (array $matches) {
             $character = '*';
             $length = Str::length($matches[0]) >= 5 ?  Str::length($matches[0]) - 2 : null;
 

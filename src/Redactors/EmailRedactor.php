@@ -14,8 +14,10 @@ class EmailRedactor implements Redactor
 
     /**
      * @param mixed $value
+     *
+     * @return mixed
      */
-    public function redact($value): string
+    public function redact($value)
     {
         $isMatched = preg_match(self::PATTERN, (string) $value);
 
@@ -23,7 +25,7 @@ class EmailRedactor implements Redactor
             return $value;
         }
 
-        $callback = function (array $matches) {
+        $callback = static function (array $matches) {
             $character = '*';
             $length = Str::length($matches[1]) >= 5 ?  Str::length($matches[1]) - 2 : null;
             $replacement = Str::mask($matches[1], $character, 1, $length);

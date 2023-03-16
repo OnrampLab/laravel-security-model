@@ -6,6 +6,8 @@ interface Redactor
 {
     /**
      * @param mixed $value
+     *
+     * @return mixed
      */
-    public function redact($value): string;
+    public function redact($value);
 }
