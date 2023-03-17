@@ -29,7 +29,7 @@ class ModelBuilder extends Builder
             /** @var string $parsedColumn */
             $parsedColumn = preg_replace("/^{$tableName}\./", '', $column);
 
-            if ($this->model->isSearchableEncryptedField($parsedColumn)) {
+            if ($this->model->isEncryptableField($parsedColumn, true)) {
                 $blindIndex = $this->model->generateBlindIndex($parsedColumn, $parsedValue);
 
                 $this->query->whereNested(

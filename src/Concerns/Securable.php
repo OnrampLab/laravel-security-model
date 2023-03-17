@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App;
 use InvalidArgumentException;
 use OnrampLab\SecurityModel\Builders\ModelBuilder;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
+use OnrampLab\SecurityModel\Contracts\Redactor;
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 use OnrampLab\SecurityModel\Observers\ModelObserver;
@@ -28,31 +29,85 @@ trait Securable
         static::$keyManager = App::make(KeyManager::class);
     }
 
+    /**
+     * Get encryption keys the model used
+     */
     public function encryptionKeys(): MorphToMany
     {
         return $this->morphToMany(EncryptionKey::class, 'encryptable', 'model_has_encryption_keys');
     }
 
+    /**
+     * Get encryptable fields the model defined
+     *
+     * @return array<EncryptableField>
+     */
+    public function getEncryptableFields(): array
+    {
+        return Collection::make($this->encryptable ?? [])
+            ->map(function (array $field, string $name) {
+                return new EncryptableField([
+                    'name' => $name,
+                    'type' => $field['type'],
+                    'is_searchable' => data_get($field, 'searchable', false),
+                ]);
+            })
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Get redactable fields the model defined
+     *
+     * @return array<string>
+     */
+    public function getRedactableFields(): array
+    {
+        return array_keys($this->redactable ?? []);
+    }
+
+    /**
+     * Determine if the model is encrypted
+     */
     public function isEncrypted(): bool
     {
         return (bool) $this->encryptionKeys->first();
     }
 
-    public function isSearchableEncryptedField(string $fieldName): bool
+    /**
+     * Determine if the given field is encryptable
+     */
+    public function isEncryptableField(string $fieldName, ?bool $isSearchable = null): bool
     {
-        $field = Collection::make($this->getEncryptableFields())
-            ->first(function (EncryptableField $field) use ($fieldName) {
-                return $field->name === $fieldName && $field->isSearchable;
-            });
+        $fields = Collection::make($this->getEncryptableFields())
+            ->filter(fn (EncryptableField $field) => $field->name === $fieldName);
 
-        return (bool) $field;
+        if (! is_null($isSearchable)) {
+            $fields = $fields->filter(fn (EncryptableField $field) => $field->isSearchable === $isSearchable);
+        }
+
+        return (bool) $fields->first();
     }
 
+    /**
+     * Determine if the given field is redactable
+     */
+    public function isRedactableField(string $fieldName): bool
+    {
+        return in_array($fieldName, $this->getRedactableFields());
+    }
+
+    /**
+     * Determine if the model should be encryptable.
+     */
     public function shouldBeEncryptable(): bool
     {
         return true;
     }
 
+    /**
+     * Encrypt data of the model
+     */
     public function encrypt(): void
     {
         if (! $this->shouldBeEncryptable()) {
@@ -77,6 +132,9 @@ trait Securable
         $this->saveQuietly();
     }
 
+    /**
+     * Decrypt data of the model
+     */
     public function decrypt(): void
     {
         $encryptionKey = $this->encryptionKeys()->first();
@@ -92,11 +150,13 @@ trait Securable
     }
 
     /**
+     * Generate blind index value for the given field
+     *
      * @param mixed $value
      */
     public function generateBlindIndex(string $fieldName, $value): array
     {
-        if (! $this->isSearchableEncryptedField($fieldName)) {
+        if (! $this->isEncryptableField($fieldName, true)) {
             throw new InvalidArgumentException("The [{$fieldName}] field is not a searchable encrypted field.");
         }
 
@@ -110,28 +170,54 @@ trait Securable
 
     /**
      * Create a new Eloquent query builder for the model.
+     *
+     * @see \Illuminate\Database\Eloquent\Model
      */
     public function newEloquentBuilder($query)
     {
         return new ModelBuilder($query);
     }
 
+    /**
+     * Get an attribute from the model.
+     *
+     * @see \Illuminate\Database\Eloquent\Concerns\HasAttributes
+     */
+    public function getAttribute($key)
+    {
+        return $this->isRedactedAttribute($key)
+            ? $this->getRedactedAttribute($key)
+            : parent::getAttribute($key);
+    }
+
+    protected function isRedactedAttribute(string $key): bool
+    {
+        return preg_match('/(.+)_redacted/', $key, $matches) && $this->isRedactableField($matches[1]);
+    }
+
+    protected function getRedactedAttribute(string $key): ?string
+    {
+        preg_match('/(.+)_redacted/', $key, $matches);
+
+        $key = $matches[1];
+        $redactor = $this->resolveRedactorClass($key);
+
+        return $redactor->redact($this->getAttributeFromArray($key));
+    }
+
+    protected function resolveRedactorClass(string $key): Redactor
+    {
+        $className = data_get($this->redactable ?? [], $key);
+
+        if (! class_exists($className) || ! is_subclass_of($className, Redactor::class)) {
+            throw new InvalidArgumentException("The [{$className}] class is not a valid redactor");
+        }
+
+        return App::make($className);
+    }
+
     protected function getEncrypter(): Encrypter
     {
         return App::make(Encrypter::class, ['tableName' => $this->getTable(), 'fields' => $this->getEncryptableFields()]);
-    }
-
-    protected function getEncryptableFields(): array
-    {
-        return Collection::make($this->encryptable ?? [])
-            ->map(function (array $field, string $name) {
-                return new EncryptableField([
-                    'name' => $name,
-                    'type' => $field['type'],
-                    'is_searchable' => data_get($field, 'searchable', false),
-                ]);
-            })
-            ->values()
-            ->toArray();
     }
 }

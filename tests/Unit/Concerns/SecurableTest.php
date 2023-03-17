@@ -3,6 +3,7 @@
 namespace OnrampLab\SecurityModel\Tests\Unit\Concerns;
 
 use Closure;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
@@ -81,6 +82,53 @@ class SecurableTest extends TestCase
         $this->model->encryptionKeys()->attach($this->encryptionKey->id);
 
         $this->assertTrue($this->model->isEncrypted());
+    }
+
+    /**
+     * @test
+     */
+    public function get_encryptable_fields_should_work(): void
+    {
+        $expectedResult = ['email'];
+        $actualResult = Collection::make($this->model->getEncryptableFields())->pluck('name')->toArray();
+
+        $this->assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * @test
+     */
+    public function get_redactable_fields_should_work(): void
+    {
+        $expectedResult = ['email'];
+        $actualResult = $this->model->getRedactableFields();
+
+        $this->assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * @test
+     * @testWith ["email", true, true]
+     *           ["email", null, true]
+     *           ["phone", null, false]
+     */
+    public function is_encryptable_field_should_work(string $fieldName, ?bool $isSearchable, bool $expectedResult): void
+    {
+        $actualResult = $this->model->isEncryptableField($fieldName, $isSearchable);
+
+        $this->assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * @test
+     * @testWith ["email", true]
+     *           ["phone", false]
+     */
+    public function is_redactable_field_should_work(string $fieldName, bool $expectedResult): void
+    {
+        $actualResult = $this->model->isRedactableField($fieldName);
+
+        $this->assertEquals($expectedResult, $actualResult);
     }
 
     /**
@@ -226,6 +274,28 @@ class SecurableTest extends TestCase
         $actualModel = $this->model;
 
         $this->assertEquals($expectedModel && $expectedModel->id === $actualModel->id, $expectedResult);
+    }
+
+    /**
+     * @test
+     */
+    public function get_redacted_attribute_should_work(): void
+    {
+        $this->model->encryptionKeys()->attach($this->encryptionKey->id);
+
+        $this->keyManagerMock
+            ->shouldReceive('decryptEncryptionKey')
+            ->andReturn($this->dataKey);
+
+        $this->encrypterMock
+            ->shouldReceive('decryptRow')
+            ->andReturn(['email' => $this->email]);
+
+        $this->model->decrypt();
+
+        $this->assertEquals($this->model->email, $this->email);
+        $this->assertEquals($this->model->email_redacted, Str::repeat('*', Str::length($this->email)));
+        $this->assertEquals($this->model->name_redacted, null);
     }
 
     public function encryptedModelDataProvider(): array
