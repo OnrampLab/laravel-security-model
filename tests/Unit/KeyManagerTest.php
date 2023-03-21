@@ -87,7 +87,7 @@ class KeyManagerTest extends TestCase
         $encryptionKey = $this->manager->generateEncryptionKey($this->providerName);
 
         $this->assertEquals($encryptionKey->type, Str::kebab(Str::camel($this->providerName)));
-        $this->assertEquals($encryptionKey->key_id, $ciphertext->keyId);
+        $this->assertEquals($encryptionKey->master_key_id, $ciphertext->keyId);
         $this->assertEquals($encryptionKey->data_key, $ciphertext->content);
         $this->assertEquals($encryptionKey->is_primary, true);
     }
@@ -106,7 +106,7 @@ class KeyManagerTest extends TestCase
             ->shouldReceive('decrypt')
             ->once()
             ->withArgs(function (Ciphertext $ciphertext) use ($encryptionKey) {
-                return $ciphertext->keyId === $encryptionKey->key_id
+                return $ciphertext->keyId === $encryptionKey->master_key_id
                     && $ciphertext->content === $encryptionKey->data_key;
             })
             ->andReturn($expectedText);

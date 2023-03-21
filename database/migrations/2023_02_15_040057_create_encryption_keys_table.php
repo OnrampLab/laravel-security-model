@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('encryption_keys', function (Blueprint $table) {
             $table->id();
             $table->string('type');
-            $table->string('key_id');
+            $table->string('master_key_id');
             $table->text('data_key');
             $table->boolean('is_primary');
             $table->timestamps();
