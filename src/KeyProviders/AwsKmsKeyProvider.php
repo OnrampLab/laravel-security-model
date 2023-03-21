@@ -25,11 +25,17 @@ class AwsKmsKeyProvider implements KeyProvider
         $this->keyId = $config['key_id'];
     }
 
+    /**
+     * Get id of managed key
+     */
     public function getKeyId(): string
     {
         return $this->keyId;
     }
 
+    /**
+     * Encrypt plaintext with managed key
+     */
     public function encrypt(string $plaintext): Ciphertext
     {
         $result = $this->client->encrypt([
@@ -44,6 +50,9 @@ class AwsKmsKeyProvider implements KeyProvider
         ]);
     }
 
+    /**
+     * Decrypt ciphertext with managed key
+     */
     public function decrypt(Ciphertext $ciphertext): string
     {
         $result = $this->client->decrypt([
