@@ -8,6 +8,7 @@ use OnrampLab\SecurityModel\Console\Commands\RotateKey;
 use OnrampLab\SecurityModel\Contracts\KeyManager as KeyManagerContract;
 use OnrampLab\SecurityModel\KeyManager;
 use OnrampLab\SecurityModel\KeyProviders\AwsKmsKeyProvider;
+use OnrampLab\SecurityModel\KeyProviders\LocalKeyProvider;
 
 class SecurityModelServiceProvider extends ServiceProvider
 {
@@ -37,23 +38,25 @@ class SecurityModelServiceProvider extends ServiceProvider
 
     protected function registerKeyManager(): void
     {
-        $this->app->singleton(KeyManagerContract::class, function ($app) {
-            return tap(new KeyManager($app), function (KeyManager $manager): void {
-                $this->registerKeyProviders($manager);
-            });
-        });
+        $this->app->singleton(KeyManagerContract::class, fn ($app) => tap(new KeyManager($app), function (KeyManager $manager): void {
+            $this->registerKeyProviders($manager);
+        }));
     }
 
     protected function registerKeyProviders(KeyManager $manager): void
     {
+        $this->registerLocalKeyProviders($manager);
         $this->registerAwsKmsKeyProviders($manager);
+    }
+
+    protected function registerLocalKeyProviders(KeyManager $manager): void
+    {
+        $manager->addProvider('local', fn (array $config) => new LocalKeyProvider($config));
     }
 
     protected function registerAwsKmsKeyProviders(KeyManager $manager): void
     {
-        $manager->addProvider('aws_kms', function (array $config) {
-            return new AwsKmsKeyProvider($config);
-        });
+        $manager->addProvider('aws_kms', fn (array $config) => new AwsKmsKeyProvider($config));
     }
 
     protected function registerCommands(): void
