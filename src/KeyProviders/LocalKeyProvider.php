@@ -46,4 +46,12 @@ class LocalKeyProvider implements KeyProvider
     {
         return $this->encrypter->decryptString($ciphertext->content);
     }
+
+    /**
+     * Generate managed key
+     */
+    public static function generateKey(): string
+    {
+        return base64_encode(Encrypter::generateKey(self::ENCRYPTION_ALGORITHM));
+    }
 }

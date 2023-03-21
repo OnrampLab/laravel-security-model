@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 use OnrampLab\SecurityModel\Exceptions\KeyNotExistedException;
+use OnrampLab\SecurityModel\KeyProviders\LocalKeyProvider;
 use OnrampLab\SecurityModel\Models\EncryptionKey;
 
 class GenerateKey extends Command
@@ -56,6 +57,7 @@ class GenerateKey extends Command
             /** @var string|null $providerName */
             $providerName = $this->argument('provider');
 
+            $this->generateMasterKey($providerName);
             $this->generateEncryptionKey($keyManager, $providerName);
             $this->generateHashKey($keyManager);
 
@@ -69,6 +71,29 @@ class GenerateKey extends Command
 
             return Command::FAILURE;
         }
+    }
+
+    private function generateMasterKey(?string $providerName): void
+    {
+        $providerName = $providerName ?? $this->laravel['config']['security_model.default'] ?? null;
+        $providerConfig = $this->laravel['config']["security_model.providers.{$providerName}"] ?? [];
+
+        if (!$providerConfig || $providerConfig['driver'] !== 'local') {
+            return;
+        }
+
+        if ($providerConfig['key']) {
+            $this->info('Master key already existed');
+            return;
+        }
+
+        $variableName = 'SECURITY_MODEL_MASTER_KEY';
+        $key = LocalKeyProvider::generateKey();
+
+        $this->writeKeyIntoEnvironmentFile($variableName, $key);
+        $this->info("Master key has been set into [{$variableName}] variable in the .env file successfully.");
+
+        $this->laravel['config']["security_model.providers.{$providerName}.key"] = $key;
     }
 
     private function generateEncryptionKey(KeyManager $keyManager, ?string $providerName): void
