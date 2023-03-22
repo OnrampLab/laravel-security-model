@@ -32,17 +32,6 @@ class SecurableTest extends TestCase
 
     private User $model;
 
-    /**
-     * Define database migrations.
-     *
-     * @return void
-     */
-    protected function defineDatabaseMigrations()
-    {
-        $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__ . '/../../Migrations');
-    }
-
     protected function setUp(): void
     {
         parent::setUp();

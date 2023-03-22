@@ -28,17 +28,6 @@ class SecurableTest extends TestCase
         $app['config']->set("security_model.providers.{$this->providerName}.key", base64_encode(random_bytes(32)));
     }
 
-    /**
-     * Define database migrations.
-     *
-     * @return void
-     */
-    protected function defineDatabaseMigrations()
-    {
-        $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__ . '/../../Migrations');
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -62,6 +51,8 @@ class SecurableTest extends TestCase
         $this->assertEquals($eloquentModel->email, $attributes['email']);
         $this->assertEquals($expectedResult, $databaseModel->email !== $attributes['email']);
         $this->assertEquals($expectedResult, $eloquentModel->email_bidx !== $attributes['email']);
+
+        $eloquentModel->delete();
     }
 
     /**
@@ -80,6 +71,8 @@ class SecurableTest extends TestCase
         $this->assertEquals($eloquentModel->email, $attributes['email']);
         $this->assertEquals($expectedResult, $databaseModel->email !== $attributes['email']);
         $this->assertEquals($expectedResult, $eloquentModel->email_bidx !== $attributes['email']);
+
+        $model->delete();
     }
 
     /**
@@ -94,5 +87,7 @@ class SecurableTest extends TestCase
         $this->assertEquals($model->email, $attributes['email']);
         $this->assertEquals($model->email_redacted, $expectedResult);
         $this->assertEquals($model->name_redacted, null);
+
+        $model->delete();
     }
 }
