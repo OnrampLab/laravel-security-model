@@ -18,7 +18,7 @@ class EncryptionKey extends Model
      */
     protected $fillable = [
         'type',
-        'key_id',
+        'master_key_id',
         'data_key',
         'is_primary',
     ];

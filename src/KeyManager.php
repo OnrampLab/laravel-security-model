@@ -72,7 +72,7 @@ class KeyManager implements KeyManagerContract
 
         return EncryptionKey::create([
             'type' => $type,
-            'key_id' => $ciphertext->keyId,
+            'master_key_id' => $ciphertext->keyId,
             'data_key' => $ciphertext->content,
             'is_primary' => true,
         ]);
@@ -90,7 +90,7 @@ class KeyManager implements KeyManagerContract
         $providerName = Str::snake(Str::camel($key->type));
         $provider = $this->resolveProvider($providerName);
         $ciphertext = new Ciphertext([
-            'key_id' => $key->key_id,
+            'key_id' => $key->master_key_id,
             'content' => $key->data_key,
         ]);
         $plaintext = $provider->decrypt($ciphertext);

@@ -25,6 +25,7 @@
         "paragonie/ciphersweet": "^3.4"
     },
     "require-dev": {
+        "doctrine/dbal": "^3.6",
         "mockery/mockery": "^1.5",
         "nunomaduro/larastan": "^1.0",
         "nunomaduro/phpinsights": "^2.6",
@@ -61,7 +62,8 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "symfony/flex": true
+            "symfony/flex": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
     "scripts": {

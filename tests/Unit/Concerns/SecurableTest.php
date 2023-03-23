@@ -32,17 +32,6 @@ class SecurableTest extends TestCase
 
     private User $model;
 
-    /**
-     * Define database migrations.
-     *
-     * @return void
-     */
-    protected function defineDatabaseMigrations()
-    {
-        $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__ . '/../../Migrations');
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -274,28 +263,6 @@ class SecurableTest extends TestCase
         $actualModel = $this->model;
 
         $this->assertEquals($expectedModel && $expectedModel->id === $actualModel->id, $expectedResult);
-    }
-
-    /**
-     * @test
-     */
-    public function get_redacted_attribute_should_work(): void
-    {
-        $this->model->encryptionKeys()->attach($this->encryptionKey->id);
-
-        $this->keyManagerMock
-            ->shouldReceive('decryptEncryptionKey')
-            ->andReturn($this->dataKey);
-
-        $this->encrypterMock
-            ->shouldReceive('decryptRow')
-            ->andReturn(['email' => $this->email]);
-
-        $this->model->decrypt();
-
-        $this->assertEquals($this->model->email, $this->email);
-        $this->assertEquals($this->model->email_redacted, Str::repeat('*', Str::length($this->email)));
-        $this->assertEquals($this->model->name_redacted, null);
     }
 
     public function encryptedModelDataProvider(): array

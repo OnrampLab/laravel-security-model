@@ -20,7 +20,7 @@ class EncryptionKeyFactory extends Factory
     {
         return [
             'type' => $this->faker->word(),
-            'key_id' => $this->faker->uuid(),
+            'master_key_id' => $this->faker->uuid(),
             'data_key' => Crypt::encrypt(Hex::encode(random_bytes(32))),
             'is_primary' => $this->faker->boolean(),
         ];

@@ -7,12 +7,12 @@ use JsonSerializable;
 class Ciphertext implements JsonSerializable
 {
     /**
-     * The key id of key provider.
+     * The id of key managed by key provider.
      */
     public string $keyId;
 
     /**
-     * The encrypted plaintext.
+     * The encrypted content.
      */
     public string $content;
 

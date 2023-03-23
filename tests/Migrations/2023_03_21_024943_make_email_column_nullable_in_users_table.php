@@ -13,13 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('encryption_keys', function (Blueprint $table) {
-            $table->id();
-            $table->string('type');
-            $table->string('master_key_id');
-            $table->text('data_key');
-            $table->boolean('is_primary');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->text('email')->nullable(true)->change();
         });
     }
 
@@ -30,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('encryption_keys');
+        Schema::table('users', function (Blueprint $table) {
+            $table->text('email')->nullable(false)->change();
+        });
     }
 };

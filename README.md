@@ -26,9 +26,10 @@ Install the package via composer
 composer require onramplab/laravel-security-model
 ```
 
-Run migration command to build tables needed in package
+Publish migration files and run command to build tables needed in package
 
 ```bash
+php artisan vendor:publish --tag="security-model-migrations"
 php artisan migrate
 ```
 

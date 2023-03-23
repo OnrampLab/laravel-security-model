@@ -21,7 +21,7 @@ return [
     |
     */
 
-    'default' => env('SECURITY_MODEL_KEY_PROVIDER', 'aws_kms'),
+    'default' => env('SECURITY_MODEL_KEY_PROVIDER', 'local'),
 
     /*
     |--------------------------------------------------------------------------
@@ -31,11 +31,15 @@ return [
     | Here you may configure the provider information for each service that
     | is used by your application.
     |
-    | Drivers: "aws_kms"
+    | Drivers: "local", "aws_kms"
     |
     */
 
     'providers' => [
+        'local' => [
+            'driver' => 'local',
+            'key' => env('SECURITY_MODEL_MASTER_KEY'),
+        ],
         'aws_kms' => [
             'driver' => 'aws_kms',
             'access_key' => env('AWS_ACCESS_KEY_ID'),
