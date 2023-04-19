@@ -2,6 +2,7 @@
 
 namespace OnrampLab\SecurityModel\Redactors;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use OnrampLab\SecurityModel\Contracts\Redactor;
 
@@ -14,10 +15,11 @@ class ZipCodeRedactor implements Redactor
 
     /**
      * @param mixed $value
+     * @param Model $model
      *
      * @return mixed
      */
-    public function redact($value)
+    public function redact($value, $model)
     {
         $isMatched = preg_match(self::PATTERN, (string) $value);
 
