@@ -202,7 +202,7 @@ trait Securable
         $key = $matches[1];
         $redactor = $this->resolveRedactorClass($key);
 
-        return $redactor->redact($this->getAttributeFromArray($key));
+        return $redactor->redact($this->getAttributeFromArray($key), $this);
     }
 
     protected function resolveRedactorClass(string $key): Redactor
