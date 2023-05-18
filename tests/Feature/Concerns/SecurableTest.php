@@ -90,4 +90,26 @@ class SecurableTest extends TestCase
 
         $model->delete();
     }
+
+    /**
+     * @test
+     */
+    public function get_redacted_attribute_should_save_cache(): void
+    {
+        $attributes = ['email' => 'test@gmail.com'];
+        $eloquentModel = User::factory()->create($attributes);
+        $databaseModel = DB::table($eloquentModel->getTable())->find($eloquentModel->id);
+
+        $this->assertNull($databaseModel->email_redacted);
+
+        $expectedValue = '**************';
+
+        $this->assertEquals($expectedValue, $eloquentModel->email_redacted);
+
+        $databaseModel = DB::table($eloquentModel->getTable())->find($eloquentModel->id);
+
+        $this->assertEquals($expectedValue, $databaseModel->email_redacted);
+
+        $eloquentModel->delete();
+    }
 }

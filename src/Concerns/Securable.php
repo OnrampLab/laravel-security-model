@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use OnrampLab\SecurityModel\Builders\ModelBuilder;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
@@ -197,12 +198,25 @@ trait Securable
 
     protected function getRedactedAttribute(string $key): ?string
     {
+        $value = $this->getAttributeFromArray($key);
+
+        if ($value) {
+            return $value;
+        }
+
         preg_match('/(.+)_redacted/', $key, $matches);
 
-        $key = $matches[1];
-        $redactor = $this->resolveRedactorClass($key);
+        $originalKey = $matches[1];
+        $redactor = $this->resolveRedactorClass($originalKey);
+        $value = $redactor->redact($this->getAttributeFromArray($originalKey), $this);
+        $shouldCache = Schema::hasColumn($this->getTable(), $key);
 
-        return $redactor->redact($this->getAttributeFromArray($key), $this);
+        if ($shouldCache) {
+            $this->setAttribute($key, $value);
+            $this->saveQuietly();
+        }
+
+        return $value;
     }
 
     protected function resolveRedactorClass(string $key): Redactor
