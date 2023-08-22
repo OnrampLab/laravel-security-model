@@ -111,11 +111,11 @@ trait Securable
      */
     public function encrypt(): void
     {
-        if (! $this->shouldBeEncryptable()) {
+        $encryptionKey = $this->encryptionKeys()->first();
+
+        if (! $this->shouldBeEncryptable() && ! $encryptionKey) {
             return;
         }
-
-        $encryptionKey = $this->encryptionKeys()->first();
 
         if (! $encryptionKey) {
             $encryptionKey = static::$keyManager->retrieveEncryptionKey();
