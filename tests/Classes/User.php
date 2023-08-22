@@ -17,6 +17,7 @@ class User extends BaseUser implements SecurableContract
     protected $fillable = [
         'email',
         'email_bidx',
+        'is_encryptable',
     ];
 
     protected $encryptable = [
@@ -26,6 +27,18 @@ class User extends BaseUser implements SecurableContract
     protected $redactable = [
         'email' => SecretRedactor::class,
     ];
+
+    protected $casts = [
+        'is_encryptable' => 'boolean',
+    ];
+
+    /**
+     * Determine if the model should be encryptable.
+     */
+    public function shouldBeEncryptable(): bool
+    {
+        return $this->is_encryptable;
+    }
 
     protected static function newFactory(): Factory
     {

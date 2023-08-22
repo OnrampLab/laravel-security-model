@@ -77,6 +77,27 @@ class SecurableTest extends TestCase
 
     /**
      * @test
+     */
+    public function encrypted_model_should_be_encrypted_even_it_is_not_encryptable_anymore(): void
+    {
+        $attributes = [
+            'email' => 'fake@hotmail.com',
+            'is_encryptable' => false,
+        ];
+        $model = User::factory()->create(['email' => 'fake@gmail.com']);
+        $model->fill($attributes);
+        $model->save();
+
+        $eloquentModel = User::find($model->id);
+        $databaseModel = DB::table($eloquentModel->getTable())->find($eloquentModel->id);
+        $expectedResult = true;
+
+        $this->assertEquals($eloquentModel->email, $attributes['email']);
+        $this->assertEquals($expectedResult, $databaseModel->email !== $attributes['email']);
+    }
+
+    /**
+     * @test
      * @testWith [{"email": "test@gmail.com"}, "**************"]
      *           [{"email": null}, null]
      */
