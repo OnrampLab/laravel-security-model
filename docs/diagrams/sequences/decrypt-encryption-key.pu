@@ -1,0 +1,10 @@
+@startuml Decrypt Encryption Key
+
+entity Securable
+
+Securable -> KeyManager: decrpyt encryption key
+KeyManager -> KeyProvider: decrypt encrypted data key using master key
+KeyProvider -> KeyManager: decrypted data key
+KeyManager -> Securable: data key
+
+@enduml
