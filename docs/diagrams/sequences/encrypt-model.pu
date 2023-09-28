@@ -1,0 +1,18 @@
+@startuml Encrypt Model
+
+entity Securable
+
+Securable -> Securable: save original data
+Securable -> Infra: dispatch <b>saved</b> event
+Infra -> ModelObserver: handle <b>saved</b> event
+ModelObserver -> Securable: encrypt
+Securable -> KeyManager: retrieve encryption key
+KeyManager -> Securable: encryption key
+Securable -> KeyManager: decrypt encryption key
+KeyManager -> Securable: data key
+Securable -> Encrypter: encrypt data with data key
+Encrypter -> Securable: encrypted data
+Securable -> Securable: save encrypted data
+Securable -> Securable: decrypt
+
+@enduml

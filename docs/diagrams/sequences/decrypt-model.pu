@@ -1,0 +1,16 @@
+@startuml Decrypt Model
+
+entity Securable
+
+Securable -> Securable: retrieve encrypted data
+Securable -> Infra: dispatch <b>retrieved</b> event
+Infra -> ModelObserver: handle <b>retrieved</b> event
+ModelObserver -> Securable: decrypt
+Securable -> Securable: get attached encryption key
+Securable -> KeyManager: decrypt encryption key
+KeyManager -> Securable: data key
+Securable -> Encrypter: decrypt data with data key
+Encrypter -> Securable: decrypted data
+Securable -> Securable: set decrypted data
+
+@enduml

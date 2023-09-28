@@ -41,7 +41,7 @@ php artisan vendor:publish --tag="security-model-config"
 
 ## Usage
 
-### Configuration
+### Encryption
 
 1. Set up credentials for key provider you want to use for encryption
 2. Run command to generate a encryption key and a hash key
@@ -55,6 +55,10 @@ php artisan vendor:publish --tag="security-model-config"
 5. Set up `$encryptable` attribute in a model to define encryptable fields. You can check out the [section](#encryptable-field-parameters) below for more info about field parameters
 
 ```php
+<?php
+
+namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use OnrampLab\SecurityModel\Concerns\Securable;
 use OnrampLab\SecurityModel\Contracts\Securable as SecurableContract;
@@ -79,7 +83,6 @@ class User extends Model implements SecurableContract
         'email' => ['type' => 'string', 'searchable' => true],
     ];
 }
-
 ```
 
 ### Encryptable Field Parameters
@@ -135,6 +138,82 @@ Sometimes you may need to determinate whether a model should be encrypted under 
 public function shouldBeEncryptable(): bool
 {
     return $this->isClassified();
+}
+```
+
+### Redaction
+
+1. Use the `Securable` trait in a model
+2. Implement the `Securable` interface in a model
+3. Set up `$redactable` attribute in a model to define redactable fields with redactor classes you want to apply for each fields
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use OnrampLab\SecurityModel\Concerns\Securable;
+use OnrampLab\SecurityModel\Contracts\Securable as SecurableContract;
+use OnrampLab\SecurityModel\Redactors\E164PhoneNumberRedactor;
+use OnrampLab\SecurityModel\Redactors\EmailRedactor;
+
+class User extends Model implements SecurableContract
+{
+    use Securable;
+
+    /**
+     * The attributes that are mass assignable.
+     */
+    protected array $fillable = [
+        'phone',
+        'email',
+    ];
+
+    /**
+     * The attributes that are needed to be redacted.
+     */
+    protected array $redactable = [
+        'phone' => E164PhoneNumberRedactor::class,
+        'email' => EmailRedactor::class,
+    ];
+}
+```
+
+There are some built-in redactors available for different kinds of model field:
+
+- E164PhoneNumberRedactor
+- EmailRedactor
+- NameRedactor
+- PhoneNumberRedactor
+- SecretRedactor
+- ZipCodeRedactor
+
+### Custom Redactor
+
+Besides those built-in redactors mentioned above, you may wish to specify ones with custom logic. Thus, you are free to create your own redactor class. Just simply implement the class with `Redactor` interface, then use it in your securable model. 
+
+```php
+<?php
+
+namespace App\Redactors;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use OnrampLab\SecurityModel\Contracts\Redactor;
+
+class FirstCharacterRedactor implements Redactor
+{
+
+    /**
+     * @param mixed $value
+     * @param Model $model
+     * @return mixed
+     */
+    public function redact($value, $model)
+    {
+        return Str::mask((string) $value, '*', 0, 1);
+    }
 }
 ```
 

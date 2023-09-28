@@ -1,0 +1,14 @@
+@startuml Generate Encryption Key
+
+actor User
+database Database
+
+User -> KeyManager: generate encryption key
+KeyManager -> KeyManager: generate data key
+KeyManager -> KeyProvider: encrypt data key using master key
+KeyProvider -> KeyManager: encrypted data key
+KeyManager -> Database: save encrypted data key as encryption key
+Database -> KeyManager: encryption key
+KeyManager -> User: encryption key
+
+@enduml
