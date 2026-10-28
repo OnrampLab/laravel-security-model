@@ -1,14 +1,15 @@
 # laravel-security-model
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![CircleCI](https://circleci.com/gh/OnrampLab/laravel-security-model.svg?style=shield)](https://circleci.com/gh/OnrampLab/laravel-security-model)
+[![tests](https://github.com/OnrampLab/laravel-security-model/actions/workflows/tests.yml/badge.svg)](https://github.com/OnrampLab/laravel-security-model/actions/workflows/tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/onramplab/laravel-security-model.svg?style=flat-square)](https://packagist.org/packages/onramplab/laravel-security-model)
 
 A Laravel package providing security for Eloquent model
 
 ## Requirements
 
-- PHP >= 7.4;
+- PHP ^8.2;
+- Laravel 8.x – 13.x;
 - composer.
 
 ## Features
