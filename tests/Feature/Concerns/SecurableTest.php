@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Feature\Concerns;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use Illuminate\Support\Facades\DB;
 use OnrampLab\SecurityModel\Contracts\KeyManager;
 use OnrampLab\SecurityModel\Tests\Classes\User;
@@ -43,6 +47,9 @@ class SecurableTest extends TestCase
      * @testWith [{"email": "test@gmail.com"}, true]
      *           [{"email": null}, false]
      */
+    #[Test]
+    #[TestWith([['email' => 'test@gmail.com'], true])]
+    #[TestWith([['email' => null], false])]
     public function create_model_should_execute_encryption(array $attributes, bool $expectedResult): void
     {
         $eloquentModel = User::factory()->create($attributes);
@@ -60,6 +67,9 @@ class SecurableTest extends TestCase
      * @testWith [{"email": "test@gmail.com"}, true]
      *           [{"email": null}, false]
      */
+    #[Test]
+    #[TestWith([['email' => 'test@gmail.com'], true])]
+    #[TestWith([['email' => null], false])]
     public function update_model_should_execute_encryption(array $attributes, bool $expectedResult): void
     {
         $model = User::factory()->create(['email' => 'fake@gmail.com']);
@@ -78,6 +88,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function encrypted_model_should_be_encrypted_even_it_is_not_encryptable_anymore(): void
     {
         $attributes = [
@@ -101,6 +112,9 @@ class SecurableTest extends TestCase
      * @testWith [{"email": "test@gmail.com"}, "**************"]
      *           [{"email": null}, null]
      */
+    #[Test]
+    #[TestWith([['email' => 'test@gmail.com'], '**************'])]
+    #[TestWith([['email' => null], null])]
     public function get_redacted_attribute_should_work(array $attributes, ?string $expectedResult): void
     {
         $model = User::factory()->create($attributes);
@@ -115,6 +129,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function get_redacted_attribute_should_save_cache(): void
     {
         $attributes = ['email' => 'test@gmail.com'];

@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit\KeyProviders;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Str;
 use Mockery;
@@ -43,6 +47,7 @@ class LocalKeyProviderTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function get_key_id_should_work(): void
     {
         $this->assertEquals(hash('sha256', $this->config['key']), $this->provider->getKeyId());
@@ -51,6 +56,7 @@ class LocalKeyProviderTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function encrypt_should_work(): void
     {
         $plaintext = Str::random();
@@ -71,6 +77,7 @@ class LocalKeyProviderTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function decrypt_should_work(): void
     {
         $ciphertext = new Ciphertext([

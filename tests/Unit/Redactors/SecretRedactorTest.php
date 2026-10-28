@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit\Redactors;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use OnrampLab\SecurityModel\Redactors\SecretRedactor;
 use OnrampLab\SecurityModel\Tests\Classes\User;
 use OnrampLab\SecurityModel\Tests\TestCase;
@@ -26,6 +30,10 @@ class SecretRedactorTest extends TestCase
      *           ["(123) 456-7890", "**************"]
      *           ["97003", "*****"]
      */
+    #[Test]
+    #[TestWith(['John Smith', '**********'])]
+    #[TestWith(['(123) 456-7890', '**************'])]
+    #[TestWith(['97003', '*****'])]
     public function redact_should_work(string $originalValue, string $expectedValue): void
     {
         $actualValue = $this->redactor->redact($originalValue, $this->user);

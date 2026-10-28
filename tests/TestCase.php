@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use OnrampLab\SecurityModel\SecurityModelServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
+use function Orchestra\Testbench\default_migration_path;
+
 class TestCase extends OrchestraTestCase
 {
     use RefreshDatabase;
@@ -31,7 +33,7 @@ class TestCase extends OrchestraTestCase
      */
     protected function defineDatabaseMigrations()
     {
-        $this->loadLaravelMigrations();
+        $this->loadMigrationsFrom(default_migration_path());
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadMigrationsFrom(__DIR__ . '/Migrations');
     }
