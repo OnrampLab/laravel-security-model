@@ -74,7 +74,6 @@ jobs:
 
       - name: PHP Insights
         run: composer insights
-        continue-on-error: true
 
       - name: Rector
         run: composer rector
