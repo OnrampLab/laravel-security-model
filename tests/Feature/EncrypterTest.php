@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use OnrampLab\SecurityModel\Encrypter;
 use OnrampLab\SecurityModel\Tests\TestCase;
 use OnrampLab\SecurityModel\ValueObjects\EncryptableField;
@@ -29,6 +33,9 @@ class EncrypterTest extends TestCase
      * @testWith [{"email": "test@gmail.com"}, true]
      *           [{"email": null}, false]
      */
+    #[Test]
+    #[TestWith([['email' => 'test@gmail.com'], true])]
+    #[TestWith([['email' => null], false])]
     public function encrypt_row_should_work(array $originalRow, bool $expectedResult): void
     {
         $encryptedRow = $this->encrypter->encryptRow($this->key, $originalRow);
@@ -41,6 +48,9 @@ class EncrypterTest extends TestCase
      * @testWith [{"email": "test@gmail.com"}]
      *           [{"email": null}]
      */
+    #[Test]
+    #[TestWith([['email' => 'test@gmail.com']])]
+    #[TestWith([['email' => null]])]
     public function decrypt_row_should_work(array $originalRow): void
     {
         $encryptedRow = $this->encrypter->encryptRow($this->key, $originalRow);
@@ -54,6 +64,9 @@ class EncrypterTest extends TestCase
      * @testWith [{"email": "test@gmail.com"}, true]
      *           [{"email": null}, false]
      */
+    #[Test]
+    #[TestWith([['email' => 'test@gmail.com'], true])]
+    #[TestWith([['email' => null], false])]
     public function generate_blind_indices_should_work(array $originalRow, bool $expectedResult): void
     {
         $blindIndices = $this->encrypter->generateBlindIndices($this->key, $originalRow);

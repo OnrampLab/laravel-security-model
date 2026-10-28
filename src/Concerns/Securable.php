@@ -23,9 +23,15 @@ trait Securable
 {
     protected static KeyManager $keyManager;
 
+    /**
+     * Register ModelObserver events directly instead of calling observe(),
+     * which instantiates the model and is rejected during boot since Laravel 13.
+     * Keep this list in sync with the event methods of ModelObserver.
+     */
     public static function bootSecurable(): void
     {
-        static::observe(ModelObserver::class);
+        static::retrieved(ModelObserver::class . '@retrieved');
+        static::saved(ModelObserver::class . '@saved');
 
         static::$keyManager = App::make(KeyManager::class);
     }

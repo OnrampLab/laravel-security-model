@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit\Concerns;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
@@ -56,6 +60,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function encryption_keys_relationship_should_work(): void
     {
         $this->model->encryptionKeys()->attach($this->encryptionKey->id);
@@ -66,6 +71,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function is_encrypted_should_work(): void
     {
         $this->model->encryptionKeys()->attach($this->encryptionKey->id);
@@ -76,6 +82,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function get_encryptable_fields_should_work(): void
     {
         $expectedResult = ['email'];
@@ -87,6 +94,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function get_redactable_fields_should_work(): void
     {
         $expectedResult = ['email'];
@@ -101,6 +109,10 @@ class SecurableTest extends TestCase
      *           ["email", null, true]
      *           ["phone", null, false]
      */
+    #[Test]
+    #[TestWith(['email', true, true])]
+    #[TestWith(['email', null, true])]
+    #[TestWith(['phone', null, false])]
     public function is_encryptable_field_should_work(string $fieldName, ?bool $isSearchable, bool $expectedResult): void
     {
         $actualResult = $this->model->isEncryptableField($fieldName, $isSearchable);
@@ -113,6 +125,9 @@ class SecurableTest extends TestCase
      * @testWith ["email", true]
      *           ["phone", false]
      */
+    #[Test]
+    #[TestWith(['email', true])]
+    #[TestWith(['phone', false])]
     public function is_redactable_field_should_work(string $fieldName, bool $expectedResult): void
     {
         $actualResult = $this->model->isRedactableField($fieldName);
@@ -123,6 +138,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function should_be_encrytable_should_work(): void
     {
         $this->assertTrue($this->model->shouldBeEncryptable());
@@ -131,6 +147,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function encrypt_should_work(): void
     {
         $this->keyManagerMock
@@ -178,6 +195,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function decrypt_should_work(): void
     {
         $this->model->encryptionKeys()->attach($this->encryptionKey->id);
@@ -207,6 +225,7 @@ class SecurableTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function generate_blind_index_should_work(): void
     {
         $this->keyManagerMock
@@ -239,8 +258,12 @@ class SecurableTest extends TestCase
      * @test
      * @dataProvider encryptedModelDataProvider
      */
-    public function search_encrypted_field_via_query_builder_should_work(Closure $prepareData, bool $expectedResult): void
+    #[Test]
+    #[DataProvider('encryptedModelDataProvider')]
+    public function search_encrypted_field_via_query_builder_should_work(string $case): void
     {
+        [$prepareData, $expectedResult] = $this->{$case}();
+
         $this->keyManagerMock
             ->shouldReceive('retrieveHashKey')
             ->andReturn($this->hashKey);
@@ -265,16 +288,16 @@ class SecurableTest extends TestCase
         $this->assertEquals($expectedModel && $expectedModel->id === $actualModel->id, $expectedResult);
     }
 
-    public function encryptedModelDataProvider(): array
+    public static function encryptedModelDataProvider(): array
     {
         return [
-            $this->searchModelWithColumnValueCase(),
-            $this->searchModelWithColumnOperatorValueCase(),
-            $this->searchModelWithPrefixedColumnCase(),
-            $this->searchModelWithOtherColumnCase(),
-            $this->searchModelWithClosureCase(),
-            $this->searchModelWithOrWhereClauseCase(),
-            $this->searchModelWithNullValueCase(),
+            'column value' => ['searchModelWithColumnValueCase'],
+            'column operator value' => ['searchModelWithColumnOperatorValueCase'],
+            'prefixed column' => ['searchModelWithPrefixedColumnCase'],
+            'other column' => ['searchModelWithOtherColumnCase'],
+            'closure' => ['searchModelWithClosureCase'],
+            'or where' => ['searchModelWithOrWhereClauseCase'],
+            'null value' => ['searchModelWithNullValueCase'],
         ];
     }
 

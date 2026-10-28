@@ -1,0 +1,55 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Class OnrampLab\\SecurityModel\\Builders\\ModelBuilder extends generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Builders/ModelBuilder.php
+
+		-
+			message: '#^Trait OnrampLab\\SecurityModel\\Concerns\\Securable is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/Securable.php
+
+		-
+			message: '#^Cannot access offset ''config'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: src/Console/Commands/GenerateKey.php
+
+		-
+			message: '#^Method OnrampLab\\SecurityModel\\Contracts\\Securable\:\:encryptionKeys\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphToMany does not specify its types\: TRelatedModel, TDeclaringModel, TPivotModel, TAccessor \(2\-4 required\)$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Contracts/Securable.php
+
+		-
+			message: '#^Cannot access offset ''config'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: src/KeyManager.php
+
+		-
+			message: '#^Class OnrampLab\\SecurityModel\\Models\\EncryptionKey uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Models/EncryptionKey.php
+
+		-
+			message: '#^Method OnrampLab\\SecurityModel\\Models\\EncryptionKey\:\:newFactory\(\) return type with generic class Illuminate\\Database\\Eloquent\\Factories\\Factory does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Models/EncryptionKey.php
+
+		-
+			message: '#^PHPDoc type array\<string\> of property OnrampLab\\SecurityModel\\Models\\EncryptionKey\:\:\$casts is not covariant with PHPDoc type array\<string, string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$casts\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: src/Models/EncryptionKey.php
+
+		-
+			message: '#^PHPDoc type array\<string\> of property OnrampLab\\SecurityModel\\Models\\EncryptionKey\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: src/Models/EncryptionKey.php

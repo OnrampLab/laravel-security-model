@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Mockery;
@@ -55,6 +59,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function retrieve_encryption_key_should_work(): void
     {
         $expectedKey = EncryptionKey::factory([
@@ -69,6 +74,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function generate_encryption_key_should_work(): void
     {
         $ciphertext = new Ciphertext([
@@ -95,6 +101,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function decrypt_encryption_key_should_work(): void
     {
         $encryptionKey = EncryptionKey::factory([
@@ -119,6 +126,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function retrieve_hash_key_should_work(): void
     {
         $expectedKey = Hex::encode(random_bytes(32));
@@ -133,6 +141,7 @@ class KeyManagerTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function generate_hash_key_should_work(): void
     {
         $hashKey = $this->manager->generateHashKey();
@@ -145,6 +154,9 @@ class KeyManagerTest extends TestCase
      * @testWith ["test_provider"]
      *           [null]
      */
+    #[Test]
+    #[TestWith(['test_provider'])]
+    #[TestWith([null])]
     public function get_name_should_work(?string $providerName): void
     {
         $this->assertEquals($this->providerName, $this->manager->getName($providerName));

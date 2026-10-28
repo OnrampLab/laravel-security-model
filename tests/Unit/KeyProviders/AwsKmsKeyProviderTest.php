@@ -2,6 +2,10 @@
 
 namespace OnrampLab\SecurityModel\Tests\Unit\KeyProviders;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
+
 use Aws\Kms\KmsClient;
 use Aws\Result;
 use Illuminate\Support\Str;
@@ -47,6 +51,7 @@ class AwsKmsKeyProviderTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function get_key_id_should_work(): void
     {
         $this->assertEquals($this->config['key_id'], $this->provider->getKeyId());
@@ -55,6 +60,7 @@ class AwsKmsKeyProviderTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function encrypt_should_work(): void
     {
         $plaintext = Str::random();
@@ -79,6 +85,7 @@ class AwsKmsKeyProviderTest extends TestCase
     /**
      * @test
      */
+    #[Test]
     public function decrypt_should_work(): void
     {
         $ciphertext = new Ciphertext([
